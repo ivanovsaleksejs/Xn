@@ -5,14 +5,16 @@ Linked with lambdabot (Haskell) and clojurebot (Clojure).
 
 Commands
 -
-<b>!id <msg></b> - shows <i>msg</i> on channel
+<b>!id &lt;msg&gt;</b> - shows <i>msg</i> on channel
 
 <b>!uptime</b> - shows bot uptime
 
 <b>!ping</b> - shows "pong" on channel
 
-<b>!lb <cmd></b> - sends <i>cmd</i> to lambdabot and shows response
+<b>!rand &lt;num&gt;</b> - generates random Integer in range 0..<i>num</i>
 
-<b>!cl</b> <cmd> - sends <i>cmd</i> to clojurebot and shows response
+<b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
+
+<b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
 
 <b>!quit</b> - quits IRC
