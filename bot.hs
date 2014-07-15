@@ -1,14 +1,24 @@
+{-# LANGUAGE OverloadedStrings #-}
 import Data.List
+import Data.Text (unpack)
+import Data.Monoid (mconcat)
+
 import Network
+import Network.HTTP.Conduit (simpleHttp)
+
 import System.IO
 import System.Time
 import System.Exit
+
 import Control.Monad.Reader
--- import Control.Exception -- for base-3, with base-4 use Control.OldException
 import Control.OldException
 import Text.Printf
+import Text.HTML.DOM (parseLBS)
+import Text.XML.Cursor (attributeIs, content, element,
+                         fromDocument, ($//), (&//), (>=>))
+
 import Prelude hiding (catch)
- 
+
 server = "irc.freenode.org"
 port   = 6667
 chan   = "#developerslv"
@@ -63,7 +73,7 @@ listen :: Handle -> Net ()
 listen h = forever $ do
     s <- init `fmap` io (hGetLine h)
     io (putStrLn s)
-    if ping s then pong s else if lb s || cl s then lbr s else  eval (clean s)
+    if ping s then pong s else if lb s || cl s then resp s else  eval (clean s)
 	  where
 	    forever a = a >> forever a
 	    clean     = drop 1 . dropWhile (/= ':') . drop 1
@@ -71,32 +81,37 @@ listen h = forever $ do
 	    lb x      = ":lambdabot" `isPrefixOf` x
 	    cl x      = ":clojurebot" `isPrefixOf` x
 	    pong x    = write "PONG" (':' : drop 6 x)
-	    lbr x     = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
+	    resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
  
 --
 -- Dispatch a command
 --
 eval :: String -> Net ()
-eval     "!uptime"             = uptime >>= privmsg
-eval     "!ping"               = write "PRIVMSG" (chan ++ " :" ++ "pong")
+eval     "!uptime"             = uptime >>= privmsg chan
+eval     "!ping"               = privmsg chan "pong"
 eval     "!quit"               = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
-eval x | "!id " `isPrefixOf` x = privmsg (drop 4 x)
-eval x | "!lb " `isPrefixOf` x = privlb (drop 4 x)
-eval x | "!cl " `isPrefixOf` x = privcl (drop 4 x)
+eval x 
+    | "!id " `isPrefixOf` x    = privmsg chan (drop 4 x)
+    | "!lb " `isPrefixOf` x    = privmsg "lambdabot" (drop 4 x)
+    | "!cl " `isPrefixOf` x    = privmsg "clojurebot" (drop 4 x)
+    | "http://" `isPrefixOf` x = fetchTitle x >>= privmsg chan
 eval     _                     = return () -- ignore everything else
  
 --
--- Send a privmsg to the current chan + server
+-- Send a privmsg to the channel/user + server
 --
-privmsg :: String -> Net ()
-privmsg s = write "PRIVMSG" (chan ++ " :" ++ s)
+privmsg :: String -> String -> Net ()
+privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
 
-privlb :: String -> Net ()
-privlb s = write "PRIVMSG" ("lambdabot :" ++ s)
- 
-privcl :: String -> Net ()
-privcl s = write "PRIVMSG" ("clojurebot :" ++ s)
- 
+--
+-- Fetch a title from web page 
+--
+fetchTitle :: MonadIO m => String -> m String
+fetchTitle url = do
+    lbs <- simpleHttp url
+    let doc = parseLBS lbs
+        cursor = fromDocument doc
+    return . unpack . mconcat $ cursor $// element "title" &// content
 --
 -- Send a message out to the server we're currently connected to
 --
