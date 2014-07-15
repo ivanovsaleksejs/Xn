@@ -9,6 +9,7 @@ import Network.HTTP.Conduit (simpleHttp)
 import System.IO
 import System.Time
 import System.Exit
+import System.Random
 
 import Control.Monad.Reader
 import Control.OldException
@@ -91,9 +92,10 @@ eval     "!uptime"             = uptime >>= privmsg chan
 eval     "!ping"               = privmsg chan "pong"
 eval     "!quit"               = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
 eval x 
-    | "!id " `isPrefixOf` x    = privmsg chan (drop 4 x)
-    | "!lb " `isPrefixOf` x    = privmsg "lambdabot" (drop 4 x)
-    | "!cl " `isPrefixOf` x    = privmsg "clojurebot" (drop 4 x)
+    | "!id " `isPrefixOf` x = privmsg chan (drop 4 x)
+    | "!lb " `isPrefixOf` x = privmsg "lambdabot" (drop 4 x)
+    | "!cl " `isPrefixOf` x = privmsg "clojurebot" (drop 4 x)
+    | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg chan 
     | "http://" `isPrefixOf` x = fetchTitle x >>= privmsg chan
 eval     _                     = return () -- ignore everything else
  
@@ -104,7 +106,7 @@ privmsg :: String -> String -> Net ()
 privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
 
 --
--- Fetch a title from web page 
+-- Fetch a title from web page
 --
 fetchTitle :: MonadIO m => String -> m String
 fetchTitle url = do
@@ -112,6 +114,13 @@ fetchTitle url = do
     let doc = parseLBS lbs
         cursor = fromDocument doc
     return . unpack . mconcat $ cursor $// element "title" &// content
+
+--
+-- Generate a random Integer in range 0..n
+--
+rand :: String -> Net String
+rand n = io $ fmap (show . flip mod (read n ::Int)) randomIO
+
 --
 -- Send a message out to the server we're currently connected to
 --
