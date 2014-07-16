@@ -19,5 +19,3 @@ Commands
 <b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
 
 <b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
-
-<b>!quit</b> - quits IRC
