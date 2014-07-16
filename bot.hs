@@ -20,10 +20,12 @@ import Text.XML.Cursor (attributeIs, content, element,
 
 import Prelude hiding (catch)
 
-server = "irc.freenode.org"
-port   = 6667
-chan   = "#developerslv"
-nick   = "Xn_pls"
+server     = "irc.freenode.org"
+port       = 6667
+chan       = "#developerslv"
+nick       = "Xn_pls"
+lambdabot  = "lambdabot"
+clojurebot = "clojurebot"
 
 --
 -- The 'Net' monad, a wrapper over IO, carrying the bot's immutable state.
@@ -74,36 +76,57 @@ listen :: Handle -> Net ()
 listen h = forever $ do
     s <- init `fmap` io (hGetLine h)
     io (putStrLn s)
-    if ping s then pong s else if lb s || cl s then resp s else  eval (clean s)
+    if ping s then pong s 
+        else if lb s || cl s then resp s 
+        else if (words s) !! 1 == "PRIVMSG" then eval (target s) (clean s) 
+        else eval "" ""
         where
             forever a = a >> forever a
             clean     = drop 1 . dropWhile (/= ':') . drop 1
             ping x    = "PING :" `isPrefixOf` x
-            lb x      = ":lambdabot" `isPrefixOf` x
-            cl x      = ":clojurebot" `isPrefixOf` x
+            lb x      = (':' : lambdabot) `isPrefixOf` x
+            cl x      = (':' : clojurebot) `isPrefixOf` x
             pong x    = write "PONG" (':' : drop 6 x)
             resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
+            target x  = if parts !! 1 == "PRIVMSG" && t /= lambdabot && t /= clojurebot && ch /= chan then t else chan
+                where 
+                    parts  = words x
+                    ch     = parts !! 2
+                    t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
 
 --
 -- Dispatch a command
 --
-eval :: String -> Net ()
-eval     "!uptime"             = uptime >>= privmsg chan
-eval     "!ping"               = privmsg chan "pong"
-eval     "!quit"               = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
-eval x 
-    | "!id " `isPrefixOf` x    = privmsg chan (drop 4 x)
-    | "!lb " `isPrefixOf` x    = privmsg "lambdabot" (drop 4 x)
-    | "!cl " `isPrefixOf` x    = privmsg "clojurebot" (drop 4 x)
-    | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg chan 
-    | "http://" `isPrefixOf` x = fetchTitle x >>= privmsg chan
-eval     _                     = return () -- ignore everything else
+eval :: String -> String -> Net ()
+eval target x 
+    | x == "!uptime"           = uptime >>= privmsg target
+    | x == "!ping"             = privmsg target "pong"
+    | "!id " `isPrefixOf` x    = privmsg target (drop 4 x)
+    | "!lb " `isPrefixOf` x    = privmsg lambdabot (drop 4 x)
+    | "!cl " `isPrefixOf` x    = privmsg clojurebot (drop 4 x)
+    | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg target 
+    | urls any x               = fetchTitles x >>= privmsg target
+    | otherwise                = return () -- ignore everything else
 
 --
 -- Send a privmsg to the channel/user + server
 --
 privmsg :: String -> String -> Net ()
 privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
+
+--
+-- Filter urls from string and apply a function
+--
+urls :: (([Char] -> Bool) -> [String] -> t) -> String -> t
+urls f s = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) (words s)
+
+--
+-- Fetch title from first url in string
+-- TODO: fetch titles from all urls in string
+-- TODO: filter out urls without title
+--
+fetchTitles :: MonadIO m => String -> m String
+fetchTitles w = head $ fmap fetchTitle (urls filter w)
 
 --
 -- Fetch a title from web page
@@ -119,7 +142,14 @@ fetchTitle url = do
 -- Generate a random Integer in range 0..n
 --
 rand :: String -> Net String
-rand n = io $ fmap (show . flip mod (read n ::Int)) randomIO
+rand s
+    | not  (isInteger s) || n == 0 = return "y u do dis"
+    | otherwise                    = io $ fmap (show . flip mod n) randomIO
+    where
+        n           = read s :: Int
+        isInteger s = case reads s :: [(Integer, String)] of
+            [(_, "")] -> True
+            _         -> False 
 
 --
 -- Send a message out to the server we're currently connected to
@@ -147,12 +177,12 @@ pretty td = join . intersperse " " . filter (not . null) . map f $
     [(years          ,"y") ,(months `mod` 12,"m")
     ,(days   `mod` 28,"d") ,(hours  `mod` 24,"h")
     ,(mins   `mod` 60,"m") ,(secs   `mod` 60,"s")]
-  where
-    secs    = abs $ tdSec td  ; mins   = secs   `div` 60
-    hours   = mins   `div` 60 ; days   = hours  `div` 24
-    months  = days   `div` 28 ; years  = months `div` 12
-    f (i,s) | i == 0    = []
-            | otherwise = show i ++ s
+    where
+        secs    = abs $ tdSec td  ; mins   = secs   `div` 60
+        hours   = mins   `div` 60 ; days   = hours  `div` 24
+        months  = days   `div` 28 ; years  = months `div` 12
+        f (i,s) | i == 0    = []
+                | otherwise = show i ++ s
 
 --
 -- Convenience.
