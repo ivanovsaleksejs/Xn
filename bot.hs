@@ -12,7 +12,7 @@ import System.Exit
 import System.Random
 
 import Control.Monad.Reader
-import Control.OldException
+import Control.Exception
 import Text.Printf
 import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (attributeIs, content, element,
@@ -24,14 +24,14 @@ server = "irc.freenode.org"
 port   = 6667
 chan   = "#developerslv"
 nick   = "Xn_pls"
- 
+
 --
 -- The 'Net' monad, a wrapper over IO, carrying the bot's immutable state.
 -- A socket and the bot's start time.
 --
 type Net = ReaderT Bot IO
 data Bot = Bot { socket :: Handle, starttime :: ClockTime }
- 
+
 --
 -- Set up actions to run on start and end, and run the main loop
 --
@@ -39,8 +39,8 @@ main :: IO ()
 main = bracket connect disconnect loop
   where
     disconnect = hClose . socket
-    loop st    = catch (runReaderT run st) (const $ return ())
- 
+    loop st    = catch (runReaderT run st) (\e -> const (return ()) (e :: IOException))
+
 --
 -- Connect to the server and return the initial bot state
 --
@@ -50,12 +50,12 @@ connect = notify $ do
     h <- connectTo server (PortNumber (fromIntegral port))
     hSetBuffering h NoBuffering
     return (Bot h t)
-  where
-    notify a = bracket_
-        (printf "Connecting to %s ... " server >> hFlush stdout)
-        (putStrLn "done.")
-        a
- 
+        where
+            notify a = bracket_
+                (printf "Connecting to %s ... " server >> hFlush stdout)
+                (putStrLn "done.")
+                a
+
 --
 -- We're in the Net monad now, so we've connected successfully
 -- Join a channel, and start processing commands
@@ -66,7 +66,7 @@ run = do
     write "USER" (nick++" 0 * :tutorial bot")
     write "JOIN" chan
     asks socket >>= listen
- 
+
 --
 -- Process each line from the server
 --
@@ -75,15 +75,15 @@ listen h = forever $ do
     s <- init `fmap` io (hGetLine h)
     io (putStrLn s)
     if ping s then pong s else if lb s || cl s then resp s else  eval (clean s)
-	  where
-	    forever a = a >> forever a
-	    clean     = drop 1 . dropWhile (/= ':') . drop 1
-	    ping x    = "PING :" `isPrefixOf` x
-	    lb x      = ":lambdabot" `isPrefixOf` x
-	    cl x      = ":clojurebot" `isPrefixOf` x
-	    pong x    = write "PONG" (':' : drop 6 x)
-	    resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
- 
+        where
+            forever a = a >> forever a
+            clean     = drop 1 . dropWhile (/= ':') . drop 1
+            ping x    = "PING :" `isPrefixOf` x
+            lb x      = ":lambdabot" `isPrefixOf` x
+            cl x      = ":clojurebot" `isPrefixOf` x
+            pong x    = write "PONG" (':' : drop 6 x)
+            resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
+
 --
 -- Dispatch a command
 --
@@ -92,13 +92,13 @@ eval     "!uptime"             = uptime >>= privmsg chan
 eval     "!ping"               = privmsg chan "pong"
 eval     "!quit"               = write "QUIT" ":Exiting" >> io (exitWith ExitSuccess)
 eval x 
-    | "!id " `isPrefixOf` x = privmsg chan (drop 4 x)
-    | "!lb " `isPrefixOf` x = privmsg "lambdabot" (drop 4 x)
-    | "!cl " `isPrefixOf` x = privmsg "clojurebot" (drop 4 x)
+    | "!id " `isPrefixOf` x    = privmsg chan (drop 4 x)
+    | "!lb " `isPrefixOf` x    = privmsg "lambdabot" (drop 4 x)
+    | "!cl " `isPrefixOf` x    = privmsg "clojurebot" (drop 4 x)
     | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg chan 
     | "http://" `isPrefixOf` x = fetchTitle x >>= privmsg chan
 eval     _                     = return () -- ignore everything else
- 
+
 --
 -- Send a privmsg to the channel/user + server
 --
@@ -129,7 +129,7 @@ write s t = do
     h <- asks socket
     io $ hPrintf h "%s %s\r\n" s t
     io $ printf    "> %s %s\n" s t
- 
+
 --
 -- Calculate and pretty print the uptime
 --
@@ -138,7 +138,7 @@ uptime = do
     now  <- io getClockTime
     zero <- asks starttime
     return . pretty $ diffClockTimes now zero
- 
+
 --
 -- Pretty print the date in '1d 9h 9m 17s' format
 --
@@ -153,7 +153,7 @@ pretty td = join . intersperse " " . filter (not . null) . map f $
     months  = days   `div` 28 ; years  = months `div` 12
     f (i,s) | i == 0    = []
             | otherwise = show i ++ s
- 
+
 --
 -- Convenience.
 --
