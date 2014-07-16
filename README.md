@@ -1,10 +1,13 @@
 Xn_pls
 ======
 A chat bot for #developerslv@freenode channel.
+
 Linked with lambdabot (Haskell) and clojurebot (Clojure).
 
 Commands
 -
+<b><i>url</i></b> - shows title tag content of webpage
+
 <b>!id &lt;msg&gt;</b> - shows <i>msg</i> on channel
 
 <b>!uptime</b> - shows bot uptime
