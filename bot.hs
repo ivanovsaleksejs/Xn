@@ -4,7 +4,7 @@ import Data.Text (unpack)
 import Data.Monoid (mconcat)
 
 import Network
-import Network.HTTP.Conduit (simpleHttp)
+import Network.HTTP.Conduit (simpleHttp, HttpException)
 
 import System.IO
 import System.Time
@@ -12,7 +12,9 @@ import System.Exit
 import System.Random
 
 import Control.Monad.Reader
-import Control.Exception
+import Control.Exception as E
+
+import Data.ByteString.Lazy.Char8  as B (pack)
 import Text.Printf
 import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (attributeIs, content, element,
@@ -105,7 +107,7 @@ eval target x
     | "!lb " `isPrefixOf` x    = privmsg lambdabot (drop 4 x)
     | "!cl " `isPrefixOf` x    = privmsg clojurebot (drop 4 x)
     | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg target 
-    | urls any x               = fetchTitles x >>= privmsg target
+    | urls any x               = getTitles x >>= privmsg target
     | otherwise                = return () -- ignore everything else
 
 --
@@ -123,10 +125,15 @@ urls f s = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) (word
 --
 -- Fetch title from first url in string
 -- TODO: fetch titles from all urls in string
--- TODO: filter out urls without title
 --
-fetchTitles :: MonadIO m => String -> m String
-fetchTitles w = head $ fmap fetchTitle (urls filter w)
+getTitles :: String -> Net String
+getTitles w = io $ head $ map getTitle (urls filter w)
+
+--
+-- If title cannot be fetched, return empty string
+--
+getTitle :: String -> IO String
+getTitle url = E.catch (fetchTitle url) (\e -> const(return "") (e :: HttpException ))
 
 --
 -- Fetch a title from web page
