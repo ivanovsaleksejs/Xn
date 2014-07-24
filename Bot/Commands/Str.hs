@@ -47,10 +47,11 @@ split' = parts . splitOn "/"
 --
 subst :: [Char] -> [Char] -> [Char]
 subst sub orig
-    | orig == ""           = ""
-    | sub  == ""           = orig
-    | isPrefixOf from orig = to ++ subst sub (drop (length from) orig)
-    | otherwise            = h  ++ subst sub t
+    | orig == ""             = ""
+    | sub  == ""             = orig
+    | (from, to) == ("", "") = orig
+    | isPrefixOf from orig   = to ++ subst sub (drop (length from) orig)
+    | otherwise              = h  ++ subst sub t
     where
         (from, to) = split' sub
         (h, t)     = splitAt 1 orig
