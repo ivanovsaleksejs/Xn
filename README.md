@@ -8,6 +8,8 @@ Commands
 -
 <b><i>url</i></b> - shows title tag content of webpage
 
+<b>s/<i>str</i>/<i>subst</i></b> - finds last message by sender and replaces <i>str</i> with <i>subst</i>
+
 <b>!id &lt;msg&gt;</b> - shows <i>msg</i> on channel
 
 <b>!uptime</b> - shows bot uptime
@@ -19,3 +21,5 @@ Commands
 <b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
 
 <b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
+
+Also bot replaces abbreviations like "til" or "afaik" with respective phrases
