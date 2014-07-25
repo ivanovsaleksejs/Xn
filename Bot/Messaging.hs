@@ -98,7 +98,7 @@ eval sender target x
     | "!cl "  `isPrefixOf` x   = privmsg clojurebot (drop 4 x)
     | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg target 
     | urls any x               = getTitles x >>= privmsg target
-    | hasAbbr x                = privmsg target (addSender sender ++ replaceAbbr x)
+    | hasAbbr x                = privmsg target (addSender sender ++ " " ++ replaceAbbr x)
     | otherwise                = return () -- ignore everything else
 
 --
