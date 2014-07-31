@@ -8,7 +8,7 @@ import Data.Monoid (mconcat)
 import Data.Text (unpack)
 
 import Control.Exception as E
-import Control.Monad.Reader as R
+import Control.Monad.RWS
 
 import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (attributeIs, content, element,
@@ -45,4 +45,4 @@ fetchTitle url = do
     lbs <- simpleHttp url
     let doc = parseLBS lbs
         cursor = fromDocument doc
-    return . unpack . mconcat $ cursor $// element "title" &// content
+    return . take 150 . unpack . mconcat $ cursor $// element "title" &// content
