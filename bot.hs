@@ -2,8 +2,8 @@
 
 import System.IO
 
-import Control.Monad.RWS as R
-import Control.Exception as E
+import Control.Monad.RWS
+import Control.Exception
 
 import Prelude hiding (catch)
 
@@ -21,4 +21,4 @@ main :: IO ((), MessageStack, ())
 main = bracket connect disconnect loop
   where
     disconnect = hClose . socket
-    loop st    = E.catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))
+    loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))

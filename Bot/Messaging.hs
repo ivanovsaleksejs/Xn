@@ -3,13 +3,13 @@ module Bot.Messaging
 where
 
 import Data.List
-import Text.Printf
 
-import Control.Monad.RWS as R
+import Control.Monad.RWS
 
 import System.IO
 
 import Bot.Config
+import Bot.Helpers
 
 import Bot.Commands.Str
 import Bot.Commands.Rand
@@ -23,68 +23,17 @@ listen :: Handle -> Net ()
 listen h = forever $ do
     s <- init `fmap` io (hGetLine h)
     stack <- get
-    put $ s : (take 100 stack)
-    io (putStrLn s)
+    io $ putStrLn s
+    if length (words s) > 2 && (words s) !! 2 == chan then put $ s : (take 100 stack)
+    else put $ take 100 stack
     if ping s then pong s
     else if s' (clean s) then substmsg s stack
+    else if history (clean s) then hist (sender s) (reverse (take 50 stack))
     else if lb s || cl s then resp s
     else if (words s) !! 1 == "PRIVMSG" then eval (sender s) (target s) (clean s)
     else return ()
     where
         forever a = a >> forever a
-
---
--- Send a message out to the server we're currently connected to
---
-write :: String -> String -> Net ()
-write s t = do
-    h <- asks socket
-    io $ hPrintf h "%s %s\r\n" s t
-    io $ printf    "> %s %s\n" s t
-
---
--- Helpers
---
-clean     = drop 1 . dropWhile (/= ':') . drop 1
-ping      = isPrefixOf "PING :"
-s'        = isPrefixOf "s/"
-lb        = isPrefixOf (':' : lambdabot)
-cl        = isPrefixOf (':' : clojurebot)
-pong x    = write "PONG" (':' : drop 6 x)
-resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
-addSender = ('<' :) . (++ ">")
-
---
--- Get sender's last message that is not s/ command
---
-lastmsg :: String -> [String] -> String
-lastmsg a stack
-    | length f == 0 = ""
-    | otherwise     = head f
-    where
-        f = filter (\s -> a == (sender s) && not (s' (clean s))) stack
-
---
--- Set target of response
---
-target :: String -> String
-target x  = if parts !! 1 == "PRIVMSG" && t /= lambdabot && t /= clojurebot && ch /= chan then t else chan
-    where 
-        parts  = words x
-        ch     = parts !! 2
-        t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
-
---
--- Get sender of message
---
-sender :: String -> String
-sender x
-    | x == ""                 = chan
-    | parts !! 1 == "PRIVMSG" = t
-    | otherwise               = chan
-    where 
-        parts  = words x
-        t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
 
 --
 -- Dispatch a command
@@ -110,6 +59,7 @@ privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
 --
 -- Send a substituted message
 --
+substmsg :: String -> MessageStack -> Net ()
 substmsg s stack = privmsg tgt (addSender author ++ " " ++  subst pattn last)
     where
         tgt    = target s

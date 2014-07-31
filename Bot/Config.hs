@@ -5,7 +5,7 @@ where
 import System.IO
 import System.Time
 
-import Control.Monad.RWS as R
+import Control.Monad.RWS
 
 server     = "irc.freenode.org"
 port       = 6667

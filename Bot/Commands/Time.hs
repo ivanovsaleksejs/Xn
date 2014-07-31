@@ -4,7 +4,7 @@ where
 
 import Data.List
 
-import Control.Monad.Reader as R
+import Control.Monad.RWS as R
 
 import System.Time
 

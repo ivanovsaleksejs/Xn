@@ -4,8 +4,8 @@ where
 
 import Text.Printf
 
-import Control.Monad.Reader as R
-import Control.Exception as E
+import Control.Monad.RWS hiding (listen)
+import Control.Exception
 
 import System.IO
 import System.Time
@@ -13,6 +13,7 @@ import System.Time
 import Network
 
 import Bot.Config
+import Bot.Helpers
 import Bot.Messaging
 
 --
