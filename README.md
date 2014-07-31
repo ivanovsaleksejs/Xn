@@ -14,6 +14,8 @@ Commands
 
 <b>!uptime</b> - shows bot uptime
 
+<b>!history</b> - PMs last 50 messages from channel
+
 <b>!ping</b> - shows "pong" on channel
 
 <b>!rand &lt;num&gt;</b> - generates random Integer in range 0..<i>num</i>
