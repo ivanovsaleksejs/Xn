@@ -16,39 +16,56 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
+pairs = 
+    (
+        [
+            (s' . clean, substmsg), -- Substitute
+            (h' . clean, hist) -- History
+        ],
+        [
+            (ping, pong), -- Ping
+            (lb,   resp), -- Response from lambdabot
+            (cl,   resp), -- Response from clojurebot
+            (priv, eval), -- Other commands
+            (const True, const $ return ()) -- Nothing
+        ]
+    )
+
 --
 -- Process each line from the server
 --
 listen :: Handle -> Net ()
 listen h = forever $ do
+    -- Get line and output to stdout
     s <- init `fmap` io (hGetLine h)
-    stack <- get
     io $ putStrLn s
-    if length (words s) > 2 && (words s) !! 2 == chan then put $ s : (take 100 stack)
-    else put $ take 100 stack
-    if ping s then pong s
-    else if s' (clean s) then substmsg s stack
-    else if history (clean s) then hist (sender s) (reverse (take 50 stack))
-    else if lb s || cl s then resp s
-    else if (words s) !! 1 == "PRIVMSG" then eval (sender s) (target s) (clean s)
-    else return ()
+
+    -- Save line in stack
+    stack <- get
+    put $ filter isChan [s] ++ take 100 stack
+
+    -- Process line
+    helper s stack pairs
+
     where
         forever a = a >> forever a
 
 --
 -- Dispatch a command
 --
-eval :: String -> String -> String -> Net ()
-eval sender target x 
-    | x == "!uptime"           = uptime >>= privmsg target
-    | x == "!ping"             = privmsg target "pong"
-    | "!id "  `isPrefixOf` x   = privmsg target (drop 4 x)
-    | "!lb "  `isPrefixOf` x   = privmsg lambdabot (drop 4 x)
-    | "!cl "  `isPrefixOf` x   = privmsg clojurebot (drop 4 x)
-    | "!rand" `isPrefixOf` x   = rand (drop 6 x) >>= privmsg target 
-    | urls any x               = getTitles x >>= privmsg target
-    | hasAbbr x                = privmsg target (addSender sender ++ " " ++ replaceAbbr x)
+eval :: String -> Net ()
+eval x 
+    | c == "!uptime"           = uptime >>= privmsg t
+    | c == "!ping"             = privmsg t "pong"
+    | "!id "  `isPrefixOf` c   = privmsg t (drop 4 c)
+    | "!lb "  `isPrefixOf` c   = privmsg lambdabot (drop 4 c)
+    | "!cl "  `isPrefixOf` c   = privmsg clojurebot (drop 4 c)
+    | "!rand" `isPrefixOf` c   = rand (drop 6 c) >>= privmsg t
+    | urls any c               = getTitles c >>= privmsg t
+    | hasAbbr c                = privmsg t (addSender s ++ " " ++ replaceAbbr c)
     | otherwise                = return () -- ignore everything else
+    where
+        (s, t, c) = (sender x, target x, clean x)
 
 --
 -- Send a privmsg to the channel/user + server

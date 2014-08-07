@@ -8,6 +8,7 @@ import Text.Printf
 import Control.Monad.RWS
 import Control.Concurrent
 
+import System.IO
 import System.Random
 
 import Bot.Config
@@ -24,15 +25,26 @@ write s t = do
 --
 -- Helpers
 --
-clean     = drop 1 . dropWhile (/= ':') . drop 1
+helper s stack fs = head $
+    [f s stack | (c, f) <- fst fs, c s] ++ 
+    [f s       | (c, f) <- snd fs, c s]
+
 ping      = isPrefixOf "PING :"
 s'        = isPrefixOf "s/"
-history   = isPrefixOf "!history"
+h'        = isPrefixOf "!history"
 lb        = isPrefixOf (':' : lambdabot)
 cl        = isPrefixOf (':' : clojurebot)
+priv      = ("PRIVMSG" ==) . (!! 1) . words
+
+isChan s  = length w > 2 && w !! 2 == chan
+    where w = words s
+
 pong x    = write "PONG" (':' : drop 6 x)
 resp x    = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
-hist x    = mapM_ (sendHistory x)
+
+clean     = drop 1 . dropWhile (/= ':') . drop 1
+hist      = (. (reverse . take 50)) . hist' . sender
+hist'     = mapM_ . sendHistory
 addSender = ('<' :) . (++ ">")
 
 --
