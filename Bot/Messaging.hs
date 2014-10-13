@@ -61,8 +61,8 @@ eval x
     | "!lb "  `isPrefixOf` c   = privmsg lambdabot (drop 4 c)
     | "!cl "  `isPrefixOf` c   = privmsg clojurebot (drop 4 c)
     | "!rand" `isPrefixOf` c   = rand (drop 6 c) >>= privmsg t
+    | "!ab "  `isPrefixOf` c   = privmsg t (addSender s ++ " " ++ replaceAbbr (drop 4 c))
     | urls any c               = getTitles c >>= privmsg t
-    | hasAbbr c                = privmsg t (addSender s ++ " " ++ replaceAbbr c)
     | otherwise                = return () -- ignore everything else
     where
         (s, t, c) = (sender x, target x, clean x)
