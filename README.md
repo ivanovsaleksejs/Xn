@@ -24,4 +24,4 @@ Commands
 
 <b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
 
-Also bot replaces abbreviations like "til" or "afaik" with respective phrases
+<b>!ab &lt;abbr&gt;</b> - replaces abbreviations like "til" or "afaik" with respective phrases
