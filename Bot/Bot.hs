@@ -38,6 +38,6 @@ connect = notify $ do
 run :: Net ()
 run = do
     write "NICK" nick
-    write "USER" (nick++" 0 * :tutorial bot")
+    write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
     write "JOIN" chan
     asks socket >>= listen

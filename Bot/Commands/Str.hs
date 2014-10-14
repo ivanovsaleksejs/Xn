@@ -49,6 +49,7 @@ subst :: [Char] -> [Char] -> [Char]
 subst sub orig
     | orig == ""             = ""
     | sub  == ""             = orig
+    | from == ""             = orig
     | (from, to) == ("", "") = orig
     | isPrefixOf from orig   = to ++ subst sub (drop (length from) orig)
     | otherwise              = h  ++ subst sub t
