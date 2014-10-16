@@ -16,7 +16,7 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
-pairs = 
+pairs =
     (
         [
             (s' . clean, substmsg), -- Substitute
@@ -54,7 +54,7 @@ listen h = forever $ do
 -- Dispatch a command
 --
 eval :: String -> Net ()
-eval x 
+eval x
     | c == "!uptime"           = uptime >>= privmsg t
     | c == "!ping"             = privmsg t "pong"
     | "!id "  `isPrefixOf` c   = privmsg t (drop 4 c)

@@ -26,7 +26,7 @@ write s t = do
 -- Helpers
 --
 helper s stack fs = head $
-    [f s stack | (c, f) <- fst fs, c s] ++ 
+    [f s stack | (c, f) <- fst fs, c s] ++
     [f s       | (c, f) <- snd fs, c s]
 
 ping      = isPrefixOf "PING :"
@@ -70,7 +70,7 @@ lastmsg a stack
 --
 target :: String -> String
 target x  = if parts !! 1 == "PRIVMSG" && t /= lambdabot && t /= clojurebot && ch /= chan then t else chan
-    where 
+    where
         parts  = words x
         ch     = parts !! 2
         t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
@@ -83,6 +83,6 @@ sender x
     | x == ""                 = chan
     | parts !! 1 == "PRIVMSG" = t
     | otherwise               = chan
-    where 
+    where
         parts  = words x
         t      = takeWhile (/= '!') $ drop 1 $ parts !! 0

@@ -17,4 +17,4 @@ rand s
         n           = read s :: Int
         isInteger s = case reads s :: [(Integer, String)] of
             [(_, "")] -> True
-            _         -> False 
+            _         -> False

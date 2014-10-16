@@ -3,7 +3,7 @@ module Bot.Abbr.Words
 where
 
 abbr :: [(String, String)]
-abbr = 
+abbr =
     [
         ("afaik", "as far as I know"),
         ("imho", "in my humble opinion"),

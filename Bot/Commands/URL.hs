@@ -21,8 +21,13 @@ import Bot.Config
 --
 -- Filter urls from string and apply a function
 --
+<<<<<<< HEAD
 urls :: (([Char] -> Bool) -> [String] -> t) -> String -> t
 urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
+=======
+urls :: ((String -> Bool) -> [String] -> t) -> String -> t
+urls f s = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) (words s)
+>>>>>>> 71abaced6c5a71e648299a39cfb22924ce58cf52
 
 --
 -- Fetch title from first url in string
