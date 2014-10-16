@@ -24,6 +24,7 @@ connect = notify $ do
     t <- getClockTime
     h <- connectTo server (PortNumber (fromIntegral port))
     hSetBuffering h NoBuffering
+    hSetEncoding  h utf8
     return (Bot h t)
         where
             notify a = bracket_
