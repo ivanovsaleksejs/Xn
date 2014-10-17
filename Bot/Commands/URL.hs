@@ -30,7 +30,7 @@ urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
 -- TODO: fetch titles from all urls in string
 --
 getTitles :: String -> Net [String]
-getTitles = io . sequence . map getTitle . urls filter 
+getTitles = io . sequence . map getTitle . urls filter
 
 --
 -- If title cannot be fetched, return empty string
