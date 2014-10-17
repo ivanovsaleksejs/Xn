@@ -50,12 +50,13 @@ addSender = ('<' :) . (++ ">")
 --
 -- Send a history entry to user
 --
-sendHistory :: String -> String -> RWST Bot () MessageStack IO ()
+sendHistory :: String -> String -> Net ()
 sendHistory x s = sendDelayed (write "PRIVMSG " (x ++ ' ' : ':' : '<' : sender s ++ "> " ++ clean s))
 
 --
 -- Sends multiple messages with random delay
 --
+sendDelayed :: Net a -> Net ()
 sendDelayed f = f >> (io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO)
 
 --
