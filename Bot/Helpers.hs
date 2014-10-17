@@ -51,13 +51,18 @@ addSender = ('<' :) . (++ ">")
 -- Send a history entry to user
 --
 sendHistory :: String -> String -> Net ()
-sendHistory x s = sendDelayed (write "PRIVMSG " (x ++ ' ' : ':' : '<' : sender s ++ "> " ++ clean s))
+sendHistory x s = sendDelayed $ write "PRIVMSG " msg 
+    where
+        (t, c) = (sender s, clean s)
+        msg    = x ++ " :<" ++ t ++ "> " ++ c
 
 --
 -- Sends multiple messages with random delay
 --
 sendDelayed :: Net a -> Net ()
-sendDelayed = (>> (io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO))
+sendDelayed = (>> (io $ threadDelay =<< fmap interval randomIO))
+    where
+        interval = (*10^5) . (+) 5 . flip mod 10
 
 --
 -- Get sender's last message that is not s/ command
