@@ -51,9 +51,12 @@ addSender = ('<' :) . (++ ">")
 -- Send a history entry to user
 --
 sendHistory :: String -> String -> RWST Bot () MessageStack IO ()
-sendHistory x s = do
-    write "PRIVMSG " (x ++ ' ' : ':' : '<' : sender s ++ "> " ++ clean s)
-    io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO
+sendHistory x s = sendDelayed (write "PRIVMSG " (x ++ ' ' : ':' : '<' : sender s ++ "> " ++ clean s))
+
+--
+-- Sends multiple messages with random delay
+--
+sendDelayed f = f >> (io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO)
 
 --
 -- Get sender's last message that is not s/ command
