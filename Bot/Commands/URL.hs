@@ -21,7 +21,7 @@ import Bot.Config
 --
 -- Filter urls from string and apply a function
 --
-urls :: (([Char] -> Bool) -> [String] -> t) -> String -> t
+urls :: ((String -> Bool) -> [String] -> t) -> String -> t
 urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
 
 --
