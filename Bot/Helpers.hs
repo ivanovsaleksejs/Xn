@@ -57,7 +57,7 @@ sendHistory x s = sendDelayed (write "PRIVMSG " (x ++ ' ' : ':' : '<' : sender s
 -- Sends multiple messages with random delay
 --
 sendDelayed :: Net a -> Net ()
-sendDelayed f = f >> (io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO)
+sendDelayed = (>> (io $ threadDelay =<< fmap ((+) 500000 . flip mod 1000000) randomIO))
 
 --
 -- Get sender's last message that is not s/ command
