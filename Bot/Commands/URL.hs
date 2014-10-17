@@ -5,10 +5,11 @@ where
 
 import Data.List
 import Data.Monoid (mconcat)
+import Data.String.Utils (join)
 import Data.Text (unpack)
 
 import Control.Exception as E
-import Control.Monad.RWS
+import Control.Monad.RWS hiding (join)
 
 import Text.HTML.DOM (parseLBS)
 import Text.XML.Cursor (attributeIs, content, element,
@@ -28,8 +29,8 @@ urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
 -- Fetch title from first url in string
 -- TODO: fetch titles from all urls in string
 --
-getTitles :: String -> Net String
-getTitles = io . head . map getTitle . urls filter
+getTitles :: String -> Net [String]
+getTitles = io . sequence . map getTitle . urls filter 
 
 --
 -- If title cannot be fetched, return empty string
