@@ -50,11 +50,11 @@ addSender = ('<' :) . (++ ">")
 --
 -- Send a history entry to user
 --
-sendHistory :: String -> String -> Net ()
-sendHistory x s = sendDelayed $ write "PRIVMSG " msg 
+sendHistory :: String -> Msg -> Net ()
+sendHistory x (time, s) = sendDelayed . join . io $ fmap (write "PRIVMSG ") msg
     where
         (t, c) = (sender s, clean s)
-        msg    = x ++ " :<" ++ t ++ "> " ++ c
+        msg    = fmap (\t' -> concat [x, " :", t', " <", t, "> ", c]) time
 
 --
 -- Sends multiple messages with random delay
@@ -70,9 +70,9 @@ sendDelayed = (>> (io $ threadDelay =<< fmap interval randomIO))
 lastmsg :: String -> MessageStack -> String
 lastmsg a stack
     | length f == 0 = ""
-    | otherwise     = head f
+    | otherwise     = snd $ head f
     where
-        f = filter (\s -> a == (sender s) && not (s' (clean s))) stack
+        f = filter (\s -> a == (sender $ snd s) && not (s' $ clean $ snd s)) stack
 
 --
 -- Set target of response

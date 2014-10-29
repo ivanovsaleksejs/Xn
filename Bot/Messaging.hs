@@ -42,7 +42,7 @@ listen h = forever $ do
 
     -- Save line in stack
     stack <- get
-    put $ filter isChan [s] ++ take 100 stack
+    put $ filter (isChan . snd) [(nowtime, s)] ++ take 100 stack
 
     -- Process line
     helper s stack pairs

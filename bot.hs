@@ -15,7 +15,7 @@ import Bot.Bot
 --
 
 msgStack :: MessageStack
-msgStack = [""]
+msgStack = [(return "", "")]
 
 main :: IO ((), MessageStack, ())
 main = bracket connect disconnect loop
