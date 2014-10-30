@@ -2,6 +2,8 @@ module Bot.Config
 
 where
 
+import Text.Printf
+
 import System.IO
 import System.Time
 
@@ -28,3 +30,17 @@ data Bot = Bot { socket :: Handle, starttime :: ClockTime }
 --
 io :: IO a -> Net a
 io = liftIO
+
+--
+-- Send a message out to the server we're currently connected to
+--
+write :: String -> String -> Net ()
+write s t = do
+    h <- asks socket
+    io $ hPrintf h "%s %s\r\n" s t
+    io $ printf    "> %s %s\n" s t
+
+--
+-- Clear message of prefix
+--
+clean     = drop 1 . dropWhile (/= ':') . drop 1

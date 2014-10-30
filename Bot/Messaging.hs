@@ -11,6 +11,7 @@ import System.IO
 import Bot.Config
 import Bot.Helpers
 
+import Bot.Commands.History
 import Bot.Commands.Str
 import Bot.Commands.Rand
 import Bot.Commands.Time
@@ -42,7 +43,7 @@ listen h = forever $ do
 
     -- Save line in stack
     stack <- get
-    put $ filter (isChan . snd) [(nowtime, s)] ++ take 100 stack
+    put $ filter (isChan . snd) [(nowtime, s)] ++ take 200 stack
 
     -- Process line
     helper s stack pairs
