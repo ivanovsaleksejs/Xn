@@ -14,7 +14,7 @@ Commands
 
 <b>!uptime</b> - shows bot uptime
 
-<b>!history</b> - PMs last 50 messages from channel
+<b>!history<i>[ num]</i></b> - PMs last <i>num</i> messages from channel (default 50)
 
 <b>!ping</b> - shows "pong" on channel
 
