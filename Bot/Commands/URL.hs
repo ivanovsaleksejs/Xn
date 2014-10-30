@@ -26,8 +26,7 @@ urls :: ((String -> Bool) -> [String] -> t) -> String -> t
 urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
 
 --
--- Fetch title from first url in string
--- TODO: fetch titles from all urls in string
+-- Fetch titles from all urls in string
 --
 getTitles :: String -> Net [String]
 getTitles = io . sequence . map getTitle . urls filter
