@@ -9,6 +9,7 @@ import Control.Monad.RWS
 import System.IO
 
 import Bot.Config
+import Bot.General
 import Bot.Helpers
 
 import Bot.Commands.History
@@ -24,6 +25,7 @@ pairs =
             (h' . clean, hist) -- History
         ],
         [
+            (hasUrls, showTitles), 
             (ping, pong), -- Ping
             (lb,   resp), -- Response from lambdabot
             (cl,   resp), -- Response from clojurebot
@@ -63,16 +65,9 @@ eval x
     | "!cl "  `isPrefixOf` c   = privmsg clojurebot (drop 4 c)
     | "!rand" `isPrefixOf` c   = rand (drop 6 c) >>= privmsg t
     | "!ab "  `isPrefixOf` c   = privmsg t (addSender s ++ " " ++ replaceAbbr (drop 4 c))
-    | urls any c               = getTitles c >>= mapM_ (sendDelayed . privmsg t)
     | otherwise                = return () -- ignore everything else
     where
         (s, t, c) = (sender x, target x, clean x)
-
---
--- Send a privmsg to the channel/user + server
---
-privmsg :: String -> String -> Net ()
-privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
 
 --
 -- Send a substituted message

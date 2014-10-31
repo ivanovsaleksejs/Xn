@@ -2,16 +2,13 @@ module Bot.Commands.History
 
 where
 
-import Data.List
-
 import Control.Concurrent
 import Control.Monad.RWS
 
 import System.Random
 
 import Bot.Config
-
-s' = isPrefixOf "s/"
+import Bot.General
 
 --
 -- Send a history entry to user

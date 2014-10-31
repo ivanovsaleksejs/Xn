@@ -13,7 +13,7 @@ import System.Time
 import Network
 
 import Bot.Config
-import Bot.Helpers
+import Bot.General
 import Bot.Messaging
 
 --
