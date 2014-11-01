@@ -9,8 +9,8 @@ import Control.Monad.RWS
 
 server     = "irc.freenode.org"
 port       = 6667
-chan       = "#xn_camp"
-nick       = "Xn_test"
+chan       = "#developerslv"
+nick       = "Xn_pls"
 lambdabot  = "lambdabot"
 clojurebot = "clojurebot"
 

@@ -31,3 +31,25 @@ write s t = do
 -- Clear message of prefix
 --
 clean     = drop 1 . dropWhile (/= ':') . drop 1
+
+--
+-- Set target of response
+--
+target :: String -> String
+target x  = if parts !! 1 == "PRIVMSG" && t /= lambdabot && t /= clojurebot && ch /= chan then t else chan
+    where
+        parts  = words x
+        ch     = parts !! 2
+        t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
+
+--
+-- Get sender of message
+--
+sender :: String -> String
+sender x
+    | x == ""                 = chan
+    | parts !! 1 == "PRIVMSG" = t
+    | otherwise               = chan
+    where
+        parts  = words x
+        t      = takeWhile (/= '!') $ drop 1 $ parts !! 0

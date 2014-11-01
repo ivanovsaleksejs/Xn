@@ -6,6 +6,10 @@ import Data.List
 import Data.List.Split
 import Data.List.Utils
 
+import Bot.Config
+import Bot.General
+import Bot.Helpers
+import Bot.Commands.History
 import Bot.Abbr.Words
 
 --
@@ -56,3 +60,14 @@ subst sub orig
     where
         (from, to) = split' sub
         (h, t)     = splitAt 1 orig
+
+--
+-- Send a substituted message
+--
+substmsg :: String -> MessageStack -> Net ()
+substmsg s stack = privmsg tgt (addSender author ++ " " ++  subst pattn last)
+    where
+        tgt    = target s
+        author = sender s
+        last   = clean $ lastmsg author stack
+        pattn  = drop 2 $ clean s
