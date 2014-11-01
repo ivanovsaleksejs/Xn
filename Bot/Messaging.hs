@@ -19,21 +19,6 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
-cmd = [
-        ("!id",     ap pm d4),                  -- Show string
-        ("!ab",     ap pm ab),                  -- Replace abbrs
-        ("!uptime", (uptime >>=) . pm),         -- Show uptime
-        ("!ping",   flip pm "pong"),            -- Show "pong"
-        ("!lb",     privmsg lambdabot . d4),    -- Command to lambdabot
-        ("!cl",     privmsg clojurebot . d4),   -- Command to clojurebot
-        ("!rand",   ap ((>>=) . rand . d6) pm), -- Show random number
-        ("",        const $ return ())
-    ]
-    where
-        [d4, d6] = map ((. clean) . drop) [4,6]
-        pm       = privmsg . target
-        ab s     = join " " [addSender $ sender s, replaceAbbr $ d4 s]
-
 pairs =
     (
         [
@@ -45,26 +30,44 @@ pairs =
             (ping, pong),          -- Ping
             (lb,   resp),          -- Response from lambdabot
             (cl,   resp)           -- Response from clojurebot
-        ] 
+        ]
         ++ [ (c, f) | x <- cmd, let c = isPrefixOf (fst x) . clean, let f = snd x]
     )
-    where 
+    where
+        cmd = [
+                ("!id",     ap pm d4),                  -- Show string
+                ("!ab",     ap pm ab),                  -- Replace abbrs
+                ("!uptime", (uptime >>=) . pm),         -- Show uptime
+                ("!ping",   flip pm "pong"),            -- Show "pong"
+                ("!lb",     privmsg lambdabot . d4),    -- Command to lambdabot
+                ("!cl",     privmsg clojurebot . d4),   -- Command to clojurebot
+                ("!rand",   ap ((>>=) . rand . d6) pm), -- Show random number
+                ("",        const $ return ())
+            ]
+        [d2, d4, d6] = map ((. clean) . drop) [2,4,6]
+        pm       = privmsg . target
+        ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
 --
 -- Process each line from the server
 --
 listen :: Handle -> Net ()
-listen h = forever $ do
-    -- Get line and output to stdout
-    s <- init `fmap` io (hGetLine h)
-    io $ putStrLn s
+listen h = forever $
+    -- Get a line from buffer managed by Handle h
+    init `fmap` io (hGetLine h) >>=
 
-    -- Save line in stack
-    stack <- get
-    put $ filter (isChan . snd) [(nowtime, s)] ++ take 200 stack
+    (\s ->
+        -- Output line to stdout for logging
+        (io $ putStrLn s) >>
+        -- Get current system time
+        io nowtime >>=
+        -- Get message stack
+        \now -> get >>=
 
-    -- Process line
-    helper s stack pairs
-
-    where
-        forever a = a >> forever a
+        (\stack ->
+            -- Save message in stack
+            (put $ filter (isChan . snd) [(return now, s)] ++ take 200 stack) >>
+            -- Process line
+            helper s stack pairs
+        )
+    )
