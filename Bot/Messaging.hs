@@ -23,7 +23,7 @@ cmd = [
         ("!id",     ap pm d4),                  -- Show string
         ("!ab",     ap pm ab),                  -- Replace abbrs
         ("!uptime", (uptime >>=) . pm),         -- Show uptime
-        ("!ping",   return "pong" >>= pm),      -- Show "pong"
+        ("!ping",   flip pm "pong"),            -- Show "pong"
         ("!lb",     privmsg lambdabot . d4),    -- Command to lambdabot
         ("!cl",     privmsg clojurebot . d4),   -- Command to clojurebot
         ("!rand",   ap ((>>=) . rand . d6) pm), -- Show random number
