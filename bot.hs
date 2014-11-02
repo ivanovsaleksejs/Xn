@@ -23,6 +23,6 @@ msgStack = [("", "")]
 main :: IO ((), MessageStack, ())
 main = bracket open disconnect loop
   where
-    open       = reviveConnection >>= fromMaybe connect . fmap return >>= makeBot >>= listenForRestart
+    open       = reviveConnection >>= maybe connect return >>= makeBot >>= listenForRestart
     disconnect = hClose . socket
     loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))
