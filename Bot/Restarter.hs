@@ -4,6 +4,7 @@ where
 
 import Control.Applicative
 import Data.Functor
+import Data.Traversable as T (sequence)
 import Safe.Exact
 import System.Environment
 import System.IO
@@ -22,8 +23,8 @@ listenForRestart :: Bot -> IO Bot
 listenForRestart bot = installHandler sigUSR1 handle Nothing >> return bot
     where handle = Catch $ handleToFd (socket bot) >>= restart . fromIntegral
 
-reviveConnection :: IO (Maybe (IO Handle))
+reviveConnection :: IO (Maybe Handle)
 reviveConnection = do
     args <- getArgs
 
-    (fdToHandle . read . head <$>) . takeExactMay 1 <$> getArgs
+    T.sequence =<< ((fdToHandle . read . head <$>) . takeExactMay 1 <$> getArgs)
