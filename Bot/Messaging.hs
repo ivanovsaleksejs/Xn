@@ -26,7 +26,8 @@ pairs =
             (h' . clean, hist)      -- History
         ],
         [
-            (tolb, privmsg lambdabot . clean), -- Command to lambdabot
+            (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
+            (tocl, privmsg clojurebot . clean), -- Command to clojurebot
             (hasUrls, showTitles), -- Show titles of urls in message
             (ping, pong),          -- Ping
             (lb,   resp),          -- Response from lambdabot
