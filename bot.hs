@@ -7,6 +7,9 @@ import Control.Exception
 
 import Prelude hiding (catch)
 
+import Data.Maybe
+
+import Bot.Restarter
 import Bot.Config
 import Bot.Bot
 
@@ -18,7 +21,8 @@ msgStack :: MessageStack
 msgStack = [("", "")]
 
 main :: IO ((), MessageStack, ())
-main = bracket connect disconnect loop
+main = bracket open disconnect loop
   where
+    open       = reviveConnection >>= fromMaybe connect >>= makeBot >>= listenForRestart
     disconnect = hClose . socket
     loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))
