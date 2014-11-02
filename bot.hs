@@ -15,10 +15,10 @@ import Bot.Bot
 --
 
 msgStack :: MessageStack
-msgStack = [(return "", "")]
+msgStack = [("", "")]
 
 main :: IO ((), MessageStack, ())
 main = bracket connect disconnect loop
-    where
-        disconnect = hClose . socket
-        loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))
+  where
+    disconnect = hClose . socket
+    loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))

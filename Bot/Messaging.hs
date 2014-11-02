@@ -66,7 +66,7 @@ listen h = forever $
 
         (\stack ->
             -- Save message in stack
-            (put $ filter (isChan . snd) [(return now, s)] ++ take 200 stack) >>
+            (put $ filter (isChan . snd) [(now, s)] ++ take 200 stack) >>
             -- Process line
             helper s stack pairs
         )

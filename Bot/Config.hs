@@ -18,7 +18,7 @@ clojurebot = "clojurebot"
 -- The 'Net' monad, a wrapper over IO, carrying the bot's immutable state.
 -- A socket and the bot's start time.
 --
-type Msg = (IO String, String)
+type Msg = (String, String)
 type MessageStack = [Msg]
 type Net = RWST Bot () MessageStack IO
 data Bot = Bot { socket :: Handle, starttime :: ClockTime }
