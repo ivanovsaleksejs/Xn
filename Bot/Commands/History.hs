@@ -14,10 +14,10 @@ import Bot.General
 -- Send a history entry to user
 --
 sendHistory :: String -> Msg -> Net ()
-sendHistory x (time, s) = sendDelayed . join . io $ fmap (write "PRIVMSG ") msg
+sendHistory target (time, s) = sendDelayed $ write "PRIVMSG " msg
     where
-        (t, c) = (sender s, clean s)
-        msg    = fmap (\t' -> concat [x, " :", t', " <", t, "> ", c]) time
+        (origin, body) = (sender s, clean s)
+        msg            = concat [target, " :", time, " <", origin, "> ", body]
 
 --
 -- Sends multiple messages with random delay
