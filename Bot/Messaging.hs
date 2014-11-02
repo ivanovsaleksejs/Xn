@@ -26,6 +26,7 @@ pairs =
             (h' . clean, hist)      -- History
         ],
         [
+            (evlb, privmsg lambdabot  . d1 . clean), -- Eval to lambdabot
             (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
             (tocl, privmsg clojurebot . clean), -- Command to clojurebot
             (hasUrls, showTitles), -- Show titles of urls in message
@@ -46,7 +47,7 @@ pairs =
                 ("!rand",   ap ((>>=) . rand . d6) pm), -- Show random number
                 ("",        const $ return ())
             ]
-        [d2, d4, d6] = map ((. clean) . drop) [2,4,6]
+        [d1, d2, d4, d6] = map ((. clean) . drop) [1,2,4,6]
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
