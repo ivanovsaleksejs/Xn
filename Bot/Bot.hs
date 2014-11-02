@@ -19,13 +19,14 @@ import Bot.Messaging
 --
 -- Connect to the server and return the initial bot state
 --
-connect :: IO Bot
-connect = notify $ do
+connect = connectTo server (PortNumber (fromIntegral port))
+
+makeBot :: Handle -> IO Bot
+makeBot h = notify $ do
     t <- getClockTime
-    h <- connectTo server (PortNumber (fromIntegral port))
     hSetBuffering h NoBuffering
     hSetEncoding  h utf8
-    return (Bot h t)
+    return $ Bot h t
         where
             notify a = bracket_
                 (printf "Connecting to %s ... " server >> hFlush stdout)
