@@ -26,6 +26,7 @@ pairs =
             (h' . clean, hist)      -- History
         ],
         [
+            (tolb, privmsg lambdabot . clean), -- Command to lambdabot
             (hasUrls, showTitles), -- Show titles of urls in message
             (ping, pong),          -- Ping
             (lb,   resp),          -- Response from lambdabot
