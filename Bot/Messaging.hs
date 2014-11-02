@@ -26,7 +26,7 @@ pairs =
             (h' . clean, hist)      -- History
         ],
         [
-            (evlb, privmsg lambdabot  . d1 . clean), -- Eval to lambdabot
+            (evlb, privmsg lambdabot  . d1),    -- Eval to lambdabot
             (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
             (tocl, privmsg clojurebot . clean), -- Command to clojurebot
             (hasUrls, showTitles), -- Show titles of urls in message
