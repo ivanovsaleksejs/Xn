@@ -53,3 +53,10 @@ sender x
     where
         parts  = words x
         t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
+
+--
+-- Checks if string is valid Integer number
+--
+isInteger s = case reads s :: [(Integer, String)] of
+    [(_, "")] -> True
+    _         -> False

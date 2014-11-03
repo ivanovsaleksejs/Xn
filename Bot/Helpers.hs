@@ -43,13 +43,10 @@ hist :: String -> MessageStack -> Net ()
 hist s stack = hist' (sender s) (reverse (take num stack))
     where
         num
-            | isInteger = n
-            | otherwise = 50
-        c         = drop 9 $ clean s
-        n         = read c :: Int
-        isInteger = case reads c :: [(Integer, String)] of
-            [(_, "")] -> True
-            _         -> False
+            | isInteger c = n
+            | otherwise   = 50
+        c           = drop 9 $ clean s
+        n           = read c :: Int
 
 hist'     = mapM_ . sendHistory
 addSender = ('<' :) . (++ ">")
