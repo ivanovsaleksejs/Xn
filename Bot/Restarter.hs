@@ -3,9 +3,12 @@ module Bot.Restarter
 where
 
 import Control.Applicative
+
 import Data.Functor
 import Data.Traversable as T (sequence)
+
 import Safe.Exact
+
 import System.Environment
 import System.IO
 import System.Posix.IO

@@ -4,6 +4,7 @@ where
 
 import Data.List
 import Data.List.Utils
+import Data.Acid
 
 import Control.Monad.RWS hiding (join)
 
@@ -55,22 +56,20 @@ pairs =
 -- Process each line from the server
 --
 listen :: Handle -> Net ()
-listen h = forever $
+listen h = forever $ do
     -- Get a line from buffer managed by Handle h
-    init `fmap` io (hGetLine h) >>=
+    s <- init `fmap` io (hGetLine h)
 
-    (\s ->
         -- Output line to stdout for logging
-        (io $ putStrLn s) >>
+    io $ putStrLn s
         -- Get current system time
-        io nowtime >>=
+    now <- io nowtime
         -- Get message stack
-        \now -> get >>=
-
-        (\stack ->
+    stack <- io $ openLocalStateFrom "chatBase/" (Stack [("", "")])
             -- Save message in stack
-            (put $ filter (isChan . snd) [(now, s)] ++ take 200 stack) >>
+--    put $ take 200 $ filter (isChan . snd) [(now, s)] ++ stack
+    io $ update stack (AddMessage (now, s))
+
+    history <- io $ query stack (ViewMessages 200)
             -- Process line
-            helper s stack pairs
-        )
-    )
+    helper s history pairs
