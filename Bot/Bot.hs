@@ -37,9 +37,9 @@ makeBot h = notify $ do
 -- We're in the Net monad now, so we've connected successfully
 -- Join a channel, and start processing commands
 --
-run :: Net ()
-run = do
+-- run :: Net ()
+run acidStack = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
     write "JOIN" chan
-    asks socket >>= listen
+    asks socket >>= listen acidStack

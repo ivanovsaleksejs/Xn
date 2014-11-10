@@ -14,9 +14,7 @@ import Bot.Commands.URL
 --
 -- Helpers
 --
-helper s stack fs = head $
-    [f s stack | (c, f) <- fst fs, c s] ++
-    [f s       | (c, f) <- snd fs, c s]
+
 
 ping      = isPrefixOf "PING :"
 h'        = isPrefixOf "!history"

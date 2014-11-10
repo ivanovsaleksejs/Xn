@@ -7,6 +7,7 @@ import Data.List.Utils
 import Data.Acid
 
 import Control.Monad.RWS hiding (join)
+import Control.Applicative
 
 import System.IO
 
@@ -20,7 +21,7 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
-pairs =
+commands =
     (
         [
             (s' . clean, substmsg), -- Substitute
@@ -55,21 +56,25 @@ pairs =
 --
 -- Process each line from the server
 --
-listen :: Handle -> Net ()
-listen h = forever $ do
-    -- Get a line from buffer managed by Handle h
-    s <- init `fmap` io (hGetLine h)
-
-        -- Output line to stdout for logging
+-- listen :: Handle -> Net ()
+listen acidStack h = forever $ do
+    -- io :: IO a -> Net a
+    -- io = liftIO
+    s  <- init <$> io (hGetLine h)
     io $ putStrLn s
-        -- Get current system time
-    now <- io nowtime
-        -- Get message stack
-    stack <- io $ openLocalStateFrom "chatBase/" (Stack [("", "")])
-            -- Save message in stack
---    put $ take 200 $ filter (isChan . snd) [(now, s)] ++ stack
-    io $ update stack (AddMessage (now, s))
 
-    history <- io $ query stack (ViewMessages 200)
-            -- Process line
-    helper s history pairs
+    now   <- io nowtime
+    stack <- get
+
+    if isChan s then do
+        let msg = (now, s)
+        put $ take 200 $ msg : stack
+        io  $ update acidStack (AddMessage msg)
+        process s stack
+    else
+        process s stack
+
+    where
+        process s stack = head $
+            [f s stack | (c, f) <- fst commands, c s] ++
+            [f s       | (c, f) <- snd commands, c s]

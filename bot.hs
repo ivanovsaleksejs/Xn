@@ -8,6 +8,7 @@ import Control.Exception
 import Prelude hiding (catch)
 
 import Data.Maybe
+import Data.Acid
 
 import Bot.Restarter
 import Bot.Config
@@ -21,8 +22,14 @@ msgStack :: MessageStack
 msgStack = [("", "")]
 
 main :: IO ((), MessageStack, ())
-main = bracket open disconnect loop
-  where
-    open       = reviveConnection >>= maybe connect return >>= makeBot >>= listenForRestart
-    disconnect = hClose . socket
-    loop st    = catch (runRWST run st msgStack) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException))
+main = do
+
+    stack <- openLocalStateFrom "chatBase/" (Stack [("", "")])
+
+    history <- query stack (ViewMessages 200)
+
+    bracket open disconnect (\st -> catch (runRWST (run stack) st history) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException)))--loop
+
+    where
+        open       = reviveConnection >>= maybe connect return >>= makeBot >>= listenForRestart
+        disconnect = hClose . socket
