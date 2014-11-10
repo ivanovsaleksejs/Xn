@@ -10,6 +10,9 @@ import Control.Monad.RWS
 
 import Bot.Config
 
+io :: IO a -> Net a
+io = liftIO
+
 s' = isPrefixOf "s/"
 
 --

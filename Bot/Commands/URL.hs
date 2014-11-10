@@ -18,6 +18,7 @@ import Text.XML.Cursor (attributeIs, content, element,
 import Network.HTTP.Conduit (simpleHttp, HttpException)
 
 import Bot.Config
+import Bot.General
 
 --
 -- Filter urls from string and apply a function

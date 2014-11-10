@@ -10,6 +10,7 @@ import System.Time
 import Data.Time
 
 import Bot.Config
+import Bot.General
 
 --
 -- Calculate and pretty print the uptime

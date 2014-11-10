@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import System.IO
+import System.Time
 
 import Control.Monad.RWS
 import Control.Exception
@@ -19,19 +20,23 @@ import Bot.Bot
 --
 
 exception :: IOException -> IO State
-exception  = const $ return ((), [] :: MessageStack, ())
+exception e = do
+    time <- getClockTime
+    return (time, [] :: MessageStack, ())
 
 main :: IO State
 main = do
 
-    stack   <- openLocalStateFrom "chatBase/" (Stack [("", "")])
+    time    <- getClockTime
+    stack   <- openLocalStateFrom "chatBase/" (Stack (time, [("", "")], ()))
+    stTime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 
-    bracket open disconnect (\st -> catch (runRWST (run stack) st history) exception)
+    bracket (open stTime) disconnect (\st -> catch (runRWST (run stack) st history) exception)
 
     where
         disconnect = hClose . socket
-        open       = reviveConnection
+        open time  = reviveConnection
                      >>= maybe connect return
-                     >>= makeBot
+                     >>= makeBot time
                      >>= listenForRestart
