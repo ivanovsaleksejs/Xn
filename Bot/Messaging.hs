@@ -11,6 +11,7 @@ import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
 import System.IO
+import System.Time
 
 import Bot.Config
 import Bot.General
@@ -54,19 +55,26 @@ commands =
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
+listen :: AcidState (EventState AddMessage) -> Handle -> Net ClockTime
 listen acidStack h = forever $ do
-
+    
+    -- Get a line from buffer managed by Handle h
     s  <- init <$> io (hGetLine h)
+    -- Output line to stdout for logging
     io $ putStrLn s
 
+    -- Get current system time
     now   <- io nowtime
+    -- Get message stack from State monad
     stack <- get
 
+    -- If message is on channell, save it in State monad and acid-state base
     whenM (return $ isChan s) $ do
         let msg = (now, s)
         put $ take 200 $ msg : stack
         io  $ update acidStack (AddMessage msg)
 
+    -- Process line
     process s stack
 
     where

@@ -2,6 +2,7 @@ module Bot.Bot
 
 where
 
+import Data.Acid
 import Text.Printf
 
 import Control.Monad.RWS hiding (listen)
@@ -19,6 +20,7 @@ import Bot.Messaging
 --
 -- Connect to the server and return the initial bot state
 --
+connect :: IO Handle
 connect = connectTo server (PortNumber (fromIntegral port))
 
 makeBot :: ClockTime -> Handle -> IO Bot
@@ -34,10 +36,9 @@ makeBot time h = notify $ do
                 a
 
 --
--- We're in the Net monad now, so we've connected successfully
 -- Join a channel, and start processing commands
 --
--- run :: Net ()
+run :: AcidState (EventState AddMessage) -> Net ClockTime
 run acidStack = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
