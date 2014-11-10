@@ -6,8 +6,9 @@ import Data.List
 import Data.List.Utils
 import Data.Acid
 
-import Control.Monad.RWS hiding (join)
 import Control.Applicative
+import Control.Monad.IfElse
+import Control.Monad.RWS hiding (join)
 
 import System.IO
 
@@ -53,26 +54,20 @@ commands =
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
---
--- Process each line from the server
---
--- listen :: Handle -> Net ()
 listen acidStack h = forever $ do
-    -- io :: IO a -> Net a
-    -- io = liftIO
+
     s  <- init <$> io (hGetLine h)
     io $ putStrLn s
 
     now   <- io nowtime
     stack <- get
 
-    if isChan s then do
+    whenM (return $ isChan s) $ do
         let msg = (now, s)
         put $ take 200 $ msg : stack
         io  $ update acidStack (AddMessage msg)
-        process s stack
-    else
-        process s stack
+
+    process s stack
 
     where
         process s stack = head $
