@@ -31,7 +31,9 @@ clojurebot = "clojurebot"
 --
 type Msg = (String, String)
 type MessageStack = [Msg]
+type State = ((), MessageStack, ())
 type Net = RWST Bot () MessageStack IO
+
 data Stack = Stack MessageStack
 data Bot = Bot { socket :: Handle, starttime :: ClockTime }
 

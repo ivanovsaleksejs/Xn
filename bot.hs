@@ -18,18 +18,20 @@ import Bot.Bot
 -- Set up actions to run on start and end, and run the main loop
 --
 
-msgStack :: MessageStack
-msgStack = [("", "")]
+exception :: IOException -> IO State
+exception  = const $ return ((), [] :: MessageStack, ())
 
-main :: IO ((), MessageStack, ())
+main :: IO State
 main = do
 
-    stack <- openLocalStateFrom "chatBase/" (Stack [("", "")])
-
+    stack   <- openLocalStateFrom "chatBase/" (Stack [("", "")])
     history <- query stack (ViewMessages 200)
 
-    bracket open disconnect (\st -> catch (runRWST (run stack) st history) (\e -> const(return((),([] :: MessageStack),()))  (e :: IOException)))--loop
+    bracket open disconnect (\st -> catch (runRWST (run stack) st history) exception)
 
     where
-        open       = reviveConnection >>= maybe connect return >>= makeBot >>= listenForRestart
         disconnect = hClose . socket
+        open       = reviveConnection
+                     >>= maybe connect return
+                     >>= makeBot
+                     >>= listenForRestart
