@@ -16,6 +16,11 @@ io = liftIO
 s' = isPrefixOf "s/"
 
 --
+-- Lambdabot commands
+--
+lbCmd = [":t", "@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo"] 
+
+--
 -- Send a privmsg to the channel/user + server
 --
 privmsg :: String -> String -> Net ()

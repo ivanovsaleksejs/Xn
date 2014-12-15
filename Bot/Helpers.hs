@@ -23,8 +23,8 @@ cl        = isPrefixOf (':' : clojurebot)
 priv      = ("PRIVMSG" ==) . (!! 1) . words
 hasUrls   = liftM2 (&&) isChan (urls any . clean)
 
-evlb      = isPrefixOf ">> " . clean
-tolb      = flip any ["@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo"] . flip isPrefixOf . clean
+evlb s    = (isPrefixOf "> " $ clean s) && sender s /= "daGrevis" -- Yes, this actually is hardcode for daGrevis
+tolb      = flip any lbCmd . flip isPrefixOf . clean
 tocl      = flip any [",("] . flip isPrefixOf . clean
 
 isChan s  = length w > 2 && w !! 2 == chan
