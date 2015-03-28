@@ -24,13 +24,13 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
-commands :: [(String -> Bool, String -> MessageStack -> Net ())]
+commands :: [(String -> Bool, String -> Net ())]
 commands =
     [
-            (s' . clean, substmsg), -- Substitute
-            (h' . clean, hist)      -- History
+            (s' . clean, substitute),
+            (h' . clean, history)
     ]
-    ++ second (const .) `map` [
+    ++ [
         (evlb, privmsg lambdabot  . clean), -- Eval to lambdabot
         (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
         (tocl, privmsg clojurebot . clean), -- Command to clojurebot
@@ -39,7 +39,7 @@ commands =
         (lb,   resp),          -- Response from lambdabot
         (cl,   resp)           -- Response from clojurebot
     ]
-    ++ [(isPrefixOf cmd . clean, const . f) | (cmd, f) <- cmd]
+    ++ [(isPrefixOf cmd . clean, f) | (cmd, f) <- cmd]
     where
         cmd = [
                 ("!id",     ap pm d4),                  -- Show string
@@ -74,4 +74,4 @@ listen acidStack h = forever $ do
         io  $ update acidStack (AddMessage msg)
 
     -- Process line
-    head . map (\(_, f) -> f s stack) . filter (($ s) . fst) $ commands
+    head . map (\(_, f) -> f s) . filter (($ s) . fst) $ commands

@@ -34,14 +34,4 @@ showTitles s = getTitles c >>= mapM_ (sendDelayed . privmsg t)
     where
         (t, c) = (target s, clean s)
 
-hist :: String -> MessageStack -> Net ()
-hist s stack = hist' (sender s) (reverse (take num stack))
-    where
-        num
-            | isInteger c = n
-            | otherwise   = 50
-        c           = drop 9 $ clean s
-        n           = read c :: Int
-
-hist'     = mapM_ . sendHistory
 addSender = ('<' :) . (++ ">")

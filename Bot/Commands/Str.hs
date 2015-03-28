@@ -2,6 +2,8 @@ module Bot.Commands.Str
 
 where
 
+import Control.Monad.RWS (get)
+
 import Data.List
 import Data.List.Split
 import Data.List.Utils
@@ -61,13 +63,21 @@ subst sub orig
         (from, to) = split' sub
         (h, t)     = splitAt 1 orig
 
---
--- Send a substituted message
---
-substmsg :: String -> MessageStack -> Net ()
-substmsg s stack = privmsg tgt (addSender author ++ " " ++  subst pattn last)
+-- Get sender's last message that is not s/ command
+lastmsg :: String -> MessageStack -> String
+lastmsg a stack
+    | length f == 0 = ""
+    | otherwise     = snd $ head f
     where
+        f  = filter (\s -> a == (sender $ snd s) && not (s' $ clean $ snd s)) stack
+
+-- Send a substituted message
+substitute :: String -> Net ()
+substitute s = do
+    stack <- get
+    let
         tgt    = target s
         author = sender s
         last   = clean $ lastmsg author stack
         pattn  = drop 2 $ clean s
+    privmsg tgt $ addSender author ++ " " ++ subst pattn last

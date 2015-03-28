@@ -10,6 +10,17 @@ import System.Random
 import Bot.Config
 import Bot.General
 
+history :: String -> Net ()
+history s = do
+    stack <- get
+    mapM_ (sendHistory $ sender s) (reverse (take num stack))
+    where
+        num
+            | isInteger c = n
+            | otherwise   = 50
+        c           = drop 9 $ clean s
+        n           = read c :: Int
+
 --
 -- Send a history entry to user
 --
@@ -26,13 +37,3 @@ sendDelayed :: Net a -> Net ()
 sendDelayed = (>> (io $ threadDelay =<< fmap interval randomIO))
     where
         interval = (*10^5) . (+) 5 . flip mod 10
-
---
--- Get sender's last message that is not s/ command
---
-lastmsg :: String -> MessageStack -> String
-lastmsg a stack
-    | length f == 0 = ""
-    | otherwise     = snd $ head f
-    where
-        f  = filter (\s -> a == (sender $ snd s) && not (s' $ clean $ snd s)) stack
