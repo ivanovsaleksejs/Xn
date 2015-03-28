@@ -26,12 +26,12 @@ exception e = do
 
 main :: IO State
 main = do
-    time    <- getClockTime
-    stack   <- openLocalStateFrom "chatBase/" (Stack (time, [("", "")], ()))
-    stTime  <- query stack GetUptime
+    now     <- getClockTime
+    stack   <- openLocalStateFrom "chatBase/" (Stack (now, [("", "")], ()))
+    uptime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 
-    bracket (open stTime) disconnect (\st -> catch (runRWST (run stack) st history) exception)
+    bracket (open uptime) disconnect (\st -> catch (runRWST (run stack) st history) exception)
 
     where
         disconnect = hClose . socket
