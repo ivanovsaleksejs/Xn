@@ -26,7 +26,6 @@ exception e = do
 
 main :: IO State
 main = do
-
     time    <- getClockTime
     stack   <- openLocalStateFrom "chatBase/" (Stack (time, [("", "")], ()))
     stTime  <- query stack GetUptime
