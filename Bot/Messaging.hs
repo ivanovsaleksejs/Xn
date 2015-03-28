@@ -38,9 +38,7 @@ commands =
         (lb,   resp),          -- Response from lambdabot
         (cl,   resp)           -- Response from clojurebot
     ]
-    ++ [
-        (c, const . f) | x <- cmd, let c = isPrefixOf (fst x) . clean, let f = snd x
-    ]
+    ++ [(isPrefixOf cmd . clean, const . f) | (cmd, f) <- cmd]
     where
         cmd = [
                 ("!id",     ap pm d4),                  -- Show string
