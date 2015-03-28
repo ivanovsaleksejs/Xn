@@ -54,7 +54,7 @@ commands =
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
-listen :: AcidState (EventState AddMessage) -> Handle -> Net ClockTime
+listen :: AcidState (EventState AddMessage) -> Handle -> Net ()
 listen acidStack h = forever $ do
     -- Get a line from buffer managed by Handle h
     s  <- init <$> io (hGetLine h)

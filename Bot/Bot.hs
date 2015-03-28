@@ -38,7 +38,7 @@ makeBot time h = notify $ do
 --
 -- Join a channel, and start processing commands
 --
-run :: AcidState (EventState AddMessage) -> Net ClockTime
+run :: AcidState (EventState AddMessage) -> Net ()
 run acidStack = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")

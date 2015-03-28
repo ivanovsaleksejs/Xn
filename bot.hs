@@ -19,12 +19,9 @@ import Bot.Bot
 -- Set up actions to run on start and end, and run the main loop
 --
 
-exception :: IOException -> IO State
-exception e = do
-    time <- getClockTime
-    return (time, [] :: MessageStack, ())
+exception :: IOException -> IO ((), MessageStack, ())
+exception _ = return ((), [] :: MessageStack, ())
 
-main :: IO State
 main = do
     now     <- getClockTime
     stack   <- openLocalStateFrom "chatBase/" (Stack (now, [("", "")], ()))
