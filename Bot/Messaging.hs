@@ -24,6 +24,7 @@ import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
+commands :: [(String -> Bool, String -> MessageStack -> Net ())]
 commands =
     [
             (s' . clean, substmsg), -- Substitute
