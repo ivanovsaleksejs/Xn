@@ -4,10 +4,12 @@ where
 
 import Data.List
 import Data.List.Utils
+import Data.Maybe
 import Data.Acid
 
 import Control.Applicative
 import Control.Arrow
+import Control.Concurrent
 import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
@@ -55,23 +57,24 @@ commands =
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
+yieldCmd :: a -> (a -> Bool) -> (a -> b) -> (Maybe b)
+yieldCmd a cond f = if cond a then Just $ f a else Nothing
+
 listen :: AcidState (EventState AddMessage) -> Handle -> Net ()
 listen acidStack h = forever $ do
-    -- Get a line from buffer managed by Handle h
-    s  <- init <$> io (hGetLine h)
-    -- Output line to stdout for logging
-    io $ putStrLn s
-
-    -- Get current system time
+    line  <- fmap init . io . hGetLine $ h
     now   <- io nowtime
-    -- Get message stack from State monad
     stack <- get
+    env   <- ask
 
+    io $ putStrLn line
     -- If message is on channel, save it in State monad and acid-state base
-    whenM (return $ isChan s) $ do
-        let msg = (now, s)
+    whenM (return $ isChan line) $ do
+        let msg = (now, line)
         put $ take 200 $ msg : stack
         io  $ update acidStack (AddMessage msg)
 
-    -- Process line
-    head . map (\(_, f) -> f s) . filter (($ s) . fst) $ commands
+    -- Find a appropriate command to execute.
+    let cmd = head . catMaybes . map (uncurry $ yieldCmd line) $ commands
+
+    void . io . forkIO . void $ runRWST cmd env stack
