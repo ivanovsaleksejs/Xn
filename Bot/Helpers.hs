@@ -11,9 +11,7 @@ import Bot.General
 import Bot.Commands.History
 import Bot.Commands.URL
 
---
 -- Helpers
---
 
 [ping, h', lb, cl] = map isPrefixOf ["PING :", "!history", ':' : lambdabot, (':' : clojurebot)]
 

@@ -17,9 +17,7 @@ import Bot.Config
 import Bot.Bot
 import Bot.Messaging
 
---
 -- Set up actions to run on start and end, and run the main loop
---
 
 ignore :: IOException -> IO ()
 ignore _ = return ()

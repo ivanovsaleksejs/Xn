@@ -12,24 +12,18 @@ import Data.Time
 import Bot.Config
 import Bot.General
 
---
 -- Calculate and pretty print the uptime
---
 uptime :: Net String
 uptime = do
     now  <- io getClockTime
     zero <- asks starttime
     return . pretty $ diffClockTimes now zero
 
---
 -- Get zoned time as IO String
---
 nowtime :: IO String
 nowtime = fmap (takeWhile (/= '.') . (!!1) . words . show) getZonedTime
 
---
 -- Pretty print the date in '1d 9h 9m 17s' format
---
 pretty :: TimeDiff -> String
 pretty td = R.join . intersperse " " . filter (not . null) . map f $
     [(years          ,"y") ,(months `mod` 12,"m")

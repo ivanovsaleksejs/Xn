@@ -21,18 +21,14 @@ history s = do
         c           = drop 9 $ clean s
         n           = read c :: Int
 
---
 -- Send a history entry to user
---
 sendHistory :: String -> Msg -> Net ()
 sendHistory target (time, s) = sendDelayed $ privmsgPrio False target msg
     where
         (origin, body) = (sender s, clean s)
         msg            = concat [time, " <", origin, "> ", body]
 
---
 -- Sends multiple messages with random delay
---
 sendDelayed :: Net a -> Net ()
 sendDelayed = (>> (io $ threadDelay =<< fmap interval randomIO))
     where

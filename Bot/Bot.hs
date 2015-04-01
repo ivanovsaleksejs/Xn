@@ -19,9 +19,7 @@ import Bot.Config
 import Bot.General
 import Bot.Messaging
 
---
 -- Connect to the server and return the initial bot state
---
 connect :: IO Handle
 connect = connectTo server (PortNumber (fromIntegral port))
 
@@ -38,9 +36,7 @@ makeBot time h = notify $ do
                 (putStrLn "done.")
                 a
 
---
 -- Join a channel, and start processing commands
---
 ident :: Net ()
 ident = do
     write "NICK" nick
