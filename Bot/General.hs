@@ -26,7 +26,7 @@ privmsgPrio prio target s = do
     chan <- asks out
     io $ writeChan chan (prio, printf "%s :%s" target s)
 
-privmsg = privmsgPrio False
+privmsg = privmsgPrio True
 
 -- Send a message out to the server we're currently connected to
 write :: String -> String -> Net ()

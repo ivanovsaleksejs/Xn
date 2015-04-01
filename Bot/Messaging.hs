@@ -81,17 +81,28 @@ listen acidStack = forever $ do
 
     void . io . forkIO . void $ runRWST cmd env stack
 
+sendOne :: [String] -> Maybe (Net [String])
+sendOne msgs =
+    if not . null $ msg
+    then Just (send >> return rest)
+    else Nothing
+    where
+        (msg, rest) = splitAt 1 msgs
+        send        = write "PRIVMSG" (head $ msg)
 
 forwardOutput = forwardOutput' [] []
-forwardOutput' :: [OutMsg] -> [OutMsg] -> Net ()
+forwardOutput' :: [String] -> [String] -> Net ()
 forwardOutput' quick slow = do
     chan <- asks out
 
-    let outmsg msg = forwardOutput' (msg:quick) slow
-    let timeout    = const $ do
-        let (msg, rest) = splitAt 1 quick
-        whenM (return . not . null $ msg) $ do
-            write "PRIVMSG" (snd . head $ msg)
-        forwardOutput' rest slow
+    let store msg = uncurry forwardOutput' $ update msg (quick, slow)
+    let tryQuick  = sendOne quick >>= return . fmap (flip (,) slow)
+    let trySlow   = sendOne slow  >>= return . fmap ((,) quick)
+    let timeout _ = (return ([], []) `fromMaybe` trySlow) `fromMaybe` tryQuick
 
-    either timeout outmsg =<< (io $ race (threadDelay 50000) (readChan chan))
+    winner <- (io $ race (threadDelay 50000) (readChan chan))
+    either ((uncurry forwardOutput' =<<) . timeout) store winner
+
+    where
+        choice cond        = if cond then first else second
+        update (cond, msg) = choice cond (msg :)
