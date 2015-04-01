@@ -63,22 +63,22 @@ yieldCmd a cond f = if cond a then Just $ f a else Nothing
 listen :: AcidState (EventState AddMessage) -> Net ()
 listen acidStack = forever $ do
     handle <- asks socket
-    line   <- fmap init . io . hGetLine $ handle
-    now    <- io nowtime
+    line   <- fmap init . liftIO . hGetLine $ handle
+    now    <- liftIO nowtime
     stack  <- get
     env    <- ask
 
-    io $ putStrLn line
+    liftIO $ putStrLn line
     -- If message is on channel, save it in State monad and acid-state base
     whenM (return $ isChan line) $ do
         let msg = (now, line)
-        put $ take 200 $ msg : stack
-        io  $ update acidStack (AddMessage msg)
+        put    $ take 200 $ msg : stack
+        liftIO $ update acidStack (AddMessage msg)
 
     -- Find a appropriate command to execute.
     let cmd = head . catMaybes . map (uncurry $ yieldCmd line) $ commands
 
-    void . io . forkIO . void $ runRWST cmd env stack
+    void . liftIO . forkIO . void $ runRWST cmd env stack
 
 sendOne :: [String] -> Maybe (Net [String])
 sendOne msgs =
@@ -99,7 +99,7 @@ forwardOutput' quick slow = do
     let trySlow   = sendOne slow  >>= return . fmap ((,) quick)
     let timeout _ = (return ([], []) `fromMaybe` trySlow) `fromMaybe` tryQuick
 
-    winner <- (io $ race (threadDelay 50000) (readChan chan))
+    winner <- (liftIO $ race (threadDelay 50000) (readChan chan))
     either ((uncurry forwardOutput' =<<) . timeout) store winner
 
     where

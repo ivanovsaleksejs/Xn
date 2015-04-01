@@ -15,7 +15,7 @@ import Bot.General
 -- Calculate and pretty print the uptime
 uptime :: Net String
 uptime = do
-    now  <- io getClockTime
+    now  <- liftIO getClockTime
     zero <- asks starttime
     return . pretty $ diffClockTimes now zero
 

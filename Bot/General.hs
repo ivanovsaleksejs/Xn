@@ -8,9 +8,6 @@ import Control.Concurrent.Chan
 import Data.List
 import Text.Printf
 
-io :: IO a -> Net a
-io = liftIO
-
 -- Send a privmsg to the channel/user + server
 privmsgPrio :: Bool -> String -> String -> Net ()
 privmsgPrio prio target s = do
