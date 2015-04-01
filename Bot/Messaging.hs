@@ -10,6 +10,7 @@ import Data.Acid
 import Control.Applicative
 import Control.Arrow
 import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
@@ -60,12 +61,13 @@ commands =
 yieldCmd :: a -> (a -> Bool) -> (a -> b) -> (Maybe b)
 yieldCmd a cond f = if cond a then Just $ f a else Nothing
 
-listen :: AcidState (EventState AddMessage) -> Handle -> Net ()
-listen acidStack h = forever $ do
-    line  <- fmap init . io . hGetLine $ h
-    now   <- io nowtime
-    stack <- get
-    env   <- ask
+listen :: AcidState (EventState AddMessage) -> Net ()
+listen acidStack = forever $ do
+    handle <- asks socket
+    line   <- fmap init . io . hGetLine $ handle
+    now    <- io nowtime
+    stack  <- get
+    env    <- ask
 
     io $ putStrLn line
     -- If message is on channel, save it in State monad and acid-state base
@@ -78,3 +80,18 @@ listen acidStack h = forever $ do
     let cmd = head . catMaybes . map (uncurry $ yieldCmd line) $ commands
 
     void . io . forkIO . void $ runRWST cmd env stack
+
+
+forwardOutput = forwardOutput' [] []
+forwardOutput' :: [OutMsg] -> [OutMsg] -> Net ()
+forwardOutput' quick slow = do
+    chan <- asks out
+
+    let outmsg msg = forwardOutput' (msg:quick) slow
+    let timeout    = const $ do
+        let (msg, rest) = splitAt 1 quick
+        whenM (return . not . null $ msg) $ do
+            write "PRIVMSG" (snd . head $ msg)
+        forwardOutput' rest slow
+
+    either timeout outmsg =<< (io $ race (threadDelay 50000) (readChan chan))

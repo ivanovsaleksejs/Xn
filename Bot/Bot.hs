@@ -5,6 +5,8 @@ where
 import Data.Acid
 import Text.Printf
 
+import Control.Concurrent.Chan
+import Control.Concurrent.Async
 import Control.Monad.RWS hiding (listen)
 import Control.Exception
 
@@ -25,10 +27,11 @@ connect = connectTo server (PortNumber (fromIntegral port))
 
 makeBot :: ClockTime -> Handle -> IO Bot
 makeBot time h = notify $ do
+    c <- newChan
     t <- getClockTime
     hSetBuffering h NoBuffering
     hSetEncoding  h utf8
-    return $ Bot h time
+    return $ Bot h time c
         where
             notify a = bracket_
                 (printf "Connecting to %s ... " server >> hFlush stdout)
@@ -38,9 +41,8 @@ makeBot time h = notify $ do
 --
 -- Join a channel, and start processing commands
 --
-run :: AcidState (EventState AddMessage) -> Net ()
-run acidStack = do
+ident :: Net ()
+ident = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
     write "JOIN" chan
-    asks socket >>= listen acidStack

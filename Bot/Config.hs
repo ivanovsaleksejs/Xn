@@ -17,6 +17,7 @@ import Control.Applicative
 import Control.Monad.Reader
 import Control.Monad.State hiding (State)
 import Control.Monad.RWS
+import Control.Concurrent.Chan
 
 server     = "irc.freenode.org"
 port       = 6667
@@ -31,8 +32,9 @@ type MessageStack = [Msg]
 type State = (ClockTime, MessageStack, ())
 type Net   = RWST Bot () MessageStack IO
 
-data Bot   = Bot { socket :: Handle, starttime :: ClockTime }
-data Stack = Stack State
+type OutMsg = (Bool, String) -- (HasPriority, Message)
+data Bot    = Bot { socket :: Handle, starttime :: ClockTime, out :: Chan OutMsg }
+data Stack  = Stack State
 
 instance SafeCopy Stack where
     putCopy (Stack list) = contain $ safePut list

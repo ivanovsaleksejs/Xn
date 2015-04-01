@@ -2,13 +2,11 @@ module Bot.General
 
 where
 
-import Data.List
-
-import Text.Printf
-
-import Control.Monad.RWS
-
 import Bot.Config
+import Control.Monad.RWS
+import Control.Concurrent.Chan
+import Data.List
+import Text.Printf
 
 io :: IO a -> Net a
 io = liftIO
@@ -23,12 +21,14 @@ lbCmd = [":t", "@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo"]
 --
 -- Send a privmsg to the channel/user + server
 --
-privmsg :: String -> String -> Net ()
-privmsg target s = write "PRIVMSG" (target ++ " :" ++ s)
+privmsgPrio :: Bool -> String -> String -> Net ()
+privmsgPrio prio target s = do
+    chan <- asks out
+    io $ writeChan chan (prio, printf "%s :%s" target s)
 
---
+privmsg = privmsgPrio False
+
 -- Send a message out to the server we're currently connected to
---
 write :: String -> String -> Net ()
 write s t = do
     h <- asks socket

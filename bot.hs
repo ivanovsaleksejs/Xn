@@ -3,7 +3,8 @@
 import System.IO
 import System.Time
 
-import Control.Monad.RWS
+import Control.Concurrent.Async
+import Control.Monad.RWS hiding (listen)
 import Control.Exception
 
 import Prelude hiding (catch)
@@ -14,13 +15,18 @@ import Data.Acid
 import Bot.Restarter
 import Bot.Config
 import Bot.Bot
+import Bot.Messaging
 
 --
 -- Set up actions to run on start and end, and run the main loop
 --
 
-exception :: IOException -> IO ((), MessageStack, ())
-exception _ = return ((), [] :: MessageStack, ())
+ignore :: IOException -> IO ()
+ignore _ = return ()
+
+run bot     = do
+    let env fn = runRWST fn bot undefined
+    env forwardOutput `concurrently` env (ident >> listen undefined)
 
 main = do
     now     <- getClockTime
@@ -28,7 +34,10 @@ main = do
     uptime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 
-    bracket (open uptime) disconnect (\st -> catch (runRWST (run stack) st history) exception)
+    let run bot     = do
+        let env fn = runRWST fn bot history
+        env forwardOutput `concurrently` env (ident >> listen stack)
+    bracket (open uptime) disconnect (flip catch ignore . void . run)
 
     where
         disconnect = hClose . socket
