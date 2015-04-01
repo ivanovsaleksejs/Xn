@@ -25,10 +25,10 @@ history s = do
 -- Send a history entry to user
 --
 sendHistory :: String -> Msg -> Net ()
-sendHistory target (time, s) = sendDelayed $ write "PRIVMSG " msg
+sendHistory target (time, s) = sendDelayed $ privmsg target msg
     where
         (origin, body) = (sender s, clean s)
-        msg            = concat [target, " :", time, " <", origin, "> ", body]
+        msg            = concat [time, " <", origin, "> ", body]
 
 --
 -- Sends multiple messages with random delay
