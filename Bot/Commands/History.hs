@@ -30,6 +30,6 @@ sendHistory target (time, s) = sendDelayed $ privmsgPrio False target msg
 
 -- Sends multiple messages with random delay
 sendDelayed :: Net a -> Net ()
-sendDelayed = (>> (io $ threadDelay =<< fmap interval randomIO))
+sendDelayed = (>> (liftIO $ threadDelay =<< fmap interval randomIO))
     where
         interval = (*10^5) . (+) 5 . flip mod 10
