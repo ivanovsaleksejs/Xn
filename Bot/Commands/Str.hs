@@ -10,7 +10,6 @@ import Data.List.Utils
 
 import Bot.Config
 import Bot.General
-import Bot.Helpers
 import Bot.Commands.History
 import Bot.Abbr.Words
 
@@ -57,7 +56,7 @@ lastmsg a stack
     | length f == 0 = ""
     | otherwise     = snd $ head f
     where
-        f  = filter (\s -> a == (sender $ snd s) && not (s' $ clean $ snd s)) stack
+        f  = filter (\s -> a == (sender $ snd s) && not (isPrefixOf "s/" $ clean $ snd s)) stack
 
 -- Send a substituted message
 substitute :: String -> Net ()

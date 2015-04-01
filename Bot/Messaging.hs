@@ -19,8 +19,7 @@ import System.Time
 
 import Bot.Config
 import Bot.General
-import Bot.Helpers
-
+import Bot.Commands
 import Bot.Commands.History
 import Bot.Commands.Str
 import Bot.Commands.Rand
@@ -30,8 +29,8 @@ import Bot.Commands.URL
 commands :: [(String -> Bool, String -> Net ())]
 commands =
     [
-            (s' . clean, substitute),
-            (h' . clean, history)
+            (substituteP. clean, substitute),
+            (historyP   . clean, history)
     ]
     ++ [
         (evlb, privmsg lambdabot  . clean), -- Eval to lambdabot

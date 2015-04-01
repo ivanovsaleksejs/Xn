@@ -11,11 +11,6 @@ import Text.Printf
 io :: IO a -> Net a
 io = liftIO
 
-s' = isPrefixOf "s/"
-
--- Lambdabot commands
-lbCmd = [":t", "@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo"] 
-
 -- Send a privmsg to the channel/user + server
 privmsgPrio :: Bool -> String -> String -> Net ()
 privmsgPrio prio target s = do
@@ -51,6 +46,8 @@ sender x
     where
         parts  = words x
         t      = takeWhile (/= '!') $ drop 1 $ parts !! 0
+
+addSender = ('<' :) . (++ ">")
 
 -- Checks if string is valid Integer number
 isInteger s = case reads s :: [(Integer, String)] of
