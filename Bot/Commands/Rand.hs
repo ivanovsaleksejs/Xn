@@ -3,6 +3,7 @@ module Bot.Commands.Rand
 where
 
 import System.Random
+import Control.Monad.RWS
 
 import Bot.Config
 import Bot.General

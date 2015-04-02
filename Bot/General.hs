@@ -12,7 +12,7 @@ import Text.Printf
 privmsgPrio :: Bool -> String -> String -> Net ()
 privmsgPrio prio target s = do
     chan <- asks out
-    io $ writeChan chan (prio, printf "%s :%s" target s)
+    liftIO $ writeChan chan (prio, printf "%s :%s" target s)
 
 privmsg = privmsgPrio True
 
@@ -20,8 +20,8 @@ privmsg = privmsgPrio True
 write :: String -> String -> Net ()
 write s t = do
     h <- asks socket
-    io $ hPrintf h "%s %s\r\n" s t
-    io $ printf    "> %s %s\n" s t
+    liftIO $ hPrintf h "%s %s\r\n" s t
+    liftIO $ printf    "> %s %s\n" s t
 
 -- Clear message of prefix
 clean     = drop 1 . dropWhile (/= ':') . drop 1
