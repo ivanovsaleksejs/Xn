@@ -22,7 +22,7 @@ import Control.Concurrent.Chan
 server     = "irc.freenode.org"
 port       = 6667
 chan       = "#developerslv"
-nick       = "Xn_pls"
+nick       = "Xn"
 lambdabot  = "lambdabot"
 clojurebot = "clojurebot"
 
