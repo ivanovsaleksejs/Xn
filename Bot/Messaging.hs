@@ -4,9 +4,13 @@ where
 
 import Data.List
 import Data.List.Utils
+import Data.Maybe
 import Data.Acid
 
 import Control.Applicative
+import Control.Arrow
+import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
@@ -15,31 +19,29 @@ import System.Time
 
 import Bot.Config
 import Bot.General
-import Bot.Helpers
-
+import Bot.Commands
 import Bot.Commands.History
 import Bot.Commands.Str
 import Bot.Commands.Rand
 import Bot.Commands.Time
 import Bot.Commands.URL
 
+commands :: [(String -> Bool, String -> Net ())]
 commands =
-    (
-        [
-            (s' . clean, substmsg), -- Substitute
-            (h' . clean, hist)      -- History
-        ],
-        [
-            (evlb, privmsg lambdabot  . clean), -- Eval to lambdabot
-            (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
-            (tocl, privmsg clojurebot . clean), -- Command to clojurebot
-            (hasUrls, showTitles), -- Show titles of urls in message
-            (ping, pong),          -- Ping
-            (lb,   resp),          -- Response from lambdabot
-            (cl,   resp)           -- Response from clojurebot
-        ]
-        ++ [ (c, f) | x <- cmd, let c = isPrefixOf (fst x) . clean, let f = snd x]
-    )
+    [
+            (substituteP. clean, substitute),
+            (historyP   . clean, history)
+    ]
+    ++ [
+        (evlb, privmsg lambdabot  . clean), -- Eval to lambdabot
+        (tolb, privmsg lambdabot  . clean), -- Command to lambdabot
+        (tocl, privmsg clojurebot . clean), -- Command to clojurebot
+        (hasUrls, showTitles), -- Show titles of urls in message
+        (ping, pong),          -- Ping
+        (lb,   resp),          -- Response from lambdabot
+        (cl,   resp)           -- Response from clojurebot
+    ]
+    ++ [(isPrefixOf cmd . clean, f) | (cmd, f) <- cmd]
     where
         cmd = [
                 ("!id",     ap pm d4),                  -- Show string
@@ -55,29 +57,51 @@ commands =
         pm       = privmsg . target
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
 
-listen :: AcidState (EventState AddMessage) -> Handle -> Net ClockTime
-listen acidStack h = forever $ do
-    
-    -- Get a line from buffer managed by Handle h
-    s  <- init <$> io (hGetLine h)
-    -- Output line to stdout for logging
-    io $ putStrLn s
+yieldCmd :: a -> (a -> Bool) -> (a -> b) -> (Maybe b)
+yieldCmd a cond f = if cond a then Just $ f a else Nothing
 
-    -- Get current system time
-    now   <- io nowtime
-    -- Get message stack from State monad
-    stack <- get
+listen :: AcidState (EventState AddMessage) -> Net ()
+listen acidStack = forever $ do
+    handle <- asks socket
+    line   <- fmap init . liftIO . hGetLine $ handle
+    now    <- liftIO nowtime
+    stack  <- get
+    env    <- ask
 
-    -- If message is on channell, save it in State monad and acid-state base
-    whenM (return $ isChan s) $ do
-        let msg = (now, s)
-        put $ take 200 $ msg : stack
-        io  $ update acidStack (AddMessage msg)
+    liftIO $ putStrLn line
+    -- If message is on channel, save it in State monad and acid-state base
+    whenM (return $ isChan line) $ do
+        let msg = (now, line)
+        put    $ take 200 $ msg : stack
+        liftIO $ update acidStack (AddMessage msg)
 
-    -- Process line
-    process s stack
+    -- Find a appropriate command to execute.
+    let cmd = head . catMaybes . map (uncurry $ yieldCmd line) $ commands
+
+    void . liftIO . forkIO . void $ runRWST cmd env stack
+
+sendOne :: [String] -> Maybe (Net [String])
+sendOne msgs =
+    if not . null $ msg
+    then Just (send >> return rest)
+    else Nothing
+    where
+        (msg, rest) = splitAt 1 msgs
+        send        = write "PRIVMSG" (head $ msg)
+
+forwardOutput = forwardOutput' [] []
+forwardOutput' :: [String] -> [String] -> Net ()
+forwardOutput' quick slow = do
+    chan <- asks out
+
+    let store msg = uncurry forwardOutput' $ update msg (quick, slow)
+    let tryQuick  = sendOne quick >>= return . fmap (flip (,) slow)
+    let trySlow   = sendOne slow  >>= return . fmap ((,) quick)
+    let timeout _ = (return ([], []) `fromMaybe` trySlow) `fromMaybe` tryQuick
+
+    winner <- (liftIO $ race (threadDelay 50000) (readChan chan))
+    either ((uncurry forwardOutput' =<<) . timeout) store winner
 
     where
-        process s stack = head $
-            [f s stack | (c, f) <- fst commands, c s] ++
-            [f s       | (c, f) <- snd commands, c s]
+        choice cond        = if cond then first else second
+        update (cond, msg) = choice cond (msg :)
