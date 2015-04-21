@@ -9,7 +9,7 @@ import Bot.General
 import Bot.Commands.History
 import Bot.Commands.URL
 
-hasUrls   = liftM2 (&&) isChan (urls any . clean)
+hasUrls   = liftM2 (&&) isChan (null . urls . clean)
 evlb s    = (isPrefixOf "> " $ clean s) && sender s /= "daGrevis" -- Yes, this actually is hardcode for daGrevis
 
 -- Lambdabot commands
