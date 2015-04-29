@@ -20,13 +20,13 @@ import Network.HTTP.Conduit (simpleHttp, HttpException)
 import Bot.Config
 import Bot.General
 
--- Filter urls from string and apply a function
-urls :: ((String -> Bool) -> [String] -> t) -> String -> t
-urls f = f (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
+-- Filter urls from string
+urls :: String -> [String]
+urls = filter (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . words
 
 -- Fetch titles from all urls in string
 getTitles :: String -> Net [String]
-getTitles = liftIO . sequence . map getTitle . urls filter
+getTitles = liftIO . sequence . map getTitle . urls
 
 -- If title cannot be fetched, return empty string
 getTitle :: String -> IO String
