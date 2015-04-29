@@ -5,6 +5,7 @@ where
 import Data.Acid
 import Text.Printf
 
+import Control.Concurrent
 import Control.Concurrent.Chan
 import Control.Concurrent.Async
 import Control.Monad.RWS hiding (listen)
@@ -41,4 +42,5 @@ ident :: Net ()
 ident = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
-    write "JOIN" chan
+    write "PRIVMSG" "NickServ :identify 12345"
+    (liftIO $ threadDelay 20000000) >> write "JOIN" chan
