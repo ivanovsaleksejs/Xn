@@ -2,6 +2,8 @@ module Bot.Commands.Rand
 
 where
 
+import Control.Monad.IO.Class
+
 import System.Random
 import Control.Monad.RWS
 

@@ -3,6 +3,7 @@ module Bot.General
 where
 
 import Bot.Config
+import Control.Monad.IO.Class
 import Control.Monad.RWS
 import Control.Concurrent.Chan
 import Data.List
