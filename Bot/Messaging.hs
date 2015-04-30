@@ -76,7 +76,7 @@ listen acidStack = forever $ do
         liftIO $ update acidStack (AddMessage msg)
 
     -- Find a appropriate command to execute.
-    let cmd = head . catMaybes . map (uncurry $ yieldCmd line) $ commands
+    let cmd = fromJust . msum . map (uncurry $ yieldCmd line) $ commands
 
     void . liftIO . forkIO . void $ runRWST cmd env stack
 
