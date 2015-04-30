@@ -29,7 +29,8 @@ makeBot time h = notify $ do
     c <- newChan
     t <- getClockTime
     hSetBuffering h NoBuffering
-    hSetEncoding  h utf8
+    hSetEncoding stdin utf8
+    hSetEncoding stdout utf8
     return $ Bot h time c
         where
             notify a = bracket_

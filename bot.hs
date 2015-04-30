@@ -22,10 +22,6 @@ import Bot.Messaging
 ignore :: IOException -> IO ()
 ignore _ = return ()
 
-run bot     = do
-    let env fn = runRWST fn bot undefined
-    env forwardOutput `concurrently` env (ident >> listen undefined)
-
 main = do
     now     <- getClockTime
     stack   <- openLocalStateFrom "chatBase/" (Stack (now, [("", "")], ()))

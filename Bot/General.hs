@@ -2,6 +2,9 @@ module Bot.General
 
 where
 
+import Prelude hiding (putStrLn)
+import System.IO.UTF8
+
 import Bot.Config
 import Control.Monad.IO.Class
 import Control.Monad.RWS
@@ -21,8 +24,9 @@ privmsg = privmsgPrio True
 write :: String -> String -> Net ()
 write s t = do
     h <- asks socket
-    liftIO $ hPrintf h "%s %s\r\n" s t
-    liftIO $ printf    "> %s %s\n" s t
+    let str = s ++ " " ++ t
+    liftIO $ hPutStrLn h str
+    liftIO $ putStrLn $ "> "++ str
 
 -- Clear message of prefix
 clean     = drop 1 . dropWhile (/= ':') . drop 1
