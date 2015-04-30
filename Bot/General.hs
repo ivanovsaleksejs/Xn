@@ -52,6 +52,7 @@ sender x
 addSender = ('<' :) . (++ ">")
 
 -- Checks if string is valid Integer number
+isInteger :: String -> Bool
 isInteger s = case reads s :: [(Integer, String)] of
     [(_, "")] -> True
     _         -> False
