@@ -42,6 +42,6 @@ ident :: Net ()
 ident = do
     write "NICK" nick
     write "USER" (nick ++" 0 * :" ++ chan ++ " channel bot")
-    write "PRIVMSG" "NickServ :identify 12345"
+    write "PRIVMSG" $ "NickServ :identify " ++ password
     liftIO $ threadDelay 20000000
     write "JOIN" chan

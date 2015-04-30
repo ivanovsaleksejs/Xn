@@ -23,6 +23,7 @@ server     = "irc.freenode.org"
 port       = 6667
 chan       = "#developerslv"
 nick       = "Xn"
+password   = "12345"
 lambdabot  = "lambdabot"
 clojurebot = "clojurebot"
 
