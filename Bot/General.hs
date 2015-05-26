@@ -16,7 +16,7 @@ import Text.Printf
 privmsgPrio :: Bool -> String -> String -> Net ()
 privmsgPrio prio target s = do
     chan <- asks out
-    liftIO $ writeChan chan (prio, printf "%s :%s" target s)
+    liftIO $ writeChan chan (prio, target ++ " :" ++ s)
 
 privmsg = privmsgPrio True
 

@@ -22,7 +22,7 @@ ignore _ = return ()
 main :: IO ()
 main = do
     now     <- getClockTime
-    stack   <- openLocalStateFrom "chatBase/" (Stack (now, [("", "")], ()))
+    stack   <- openLocalStateFrom stateDir (Stack (now, [("", "")], ()))
     uptime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 

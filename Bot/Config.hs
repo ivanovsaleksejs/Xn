@@ -5,7 +5,6 @@ where
 
 import System.IO
 import System.Time
-import System.Environment
 
 import Data.SafeCopy
 import Data.Typeable
@@ -13,9 +12,6 @@ import Data.Tuple.Utils
 import Data.Acid
 import Data.Acid.Advanced
 
-import Control.Applicative
-import Control.Monad.Reader
-import Control.Monad.State hiding (State)
 import Control.Monad.RWS
 import Control.Concurrent.Chan
 
@@ -26,6 +22,7 @@ nick       = "Xn"
 password   = "12345"
 lambdabot  = "lambdabot"
 clojurebot = "clojurebot"
+stateDir   = "chatBase/"
 
 type Msg          = (String, String)
 type MessageStack = [Msg]
@@ -39,7 +36,7 @@ data Stack  = Stack State
 
 instance SafeCopy Stack where
     putCopy (Stack list) = contain $ safePut list
-    getCopy = contain $ Stack <$> safeGet
+    getCopy = contain $ fmap Stack safeGet
 
 resetUptime :: ClockTime -> Update Stack ()
 resetUptime time = do
@@ -70,7 +67,7 @@ data GetUptime    = GetUptime
 deriving instance Typeable AddMessage
 instance SafeCopy AddMessage where
     putCopy (AddMessage st) = contain $ safePut st
-    getCopy = contain $ AddMessage <$> safeGet
+    getCopy = contain $ fmap AddMessage safeGet
 instance Method AddMessage where
     type MethodResult AddMessage = ()
     type MethodState AddMessage = Stack
