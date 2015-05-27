@@ -19,7 +19,9 @@ import Bot.Commands
 import Bot.Commands.Time
 
 yieldCmd :: a -> (a -> Bool) -> (a -> b) -> (Maybe b)
-yieldCmd a cond f = if cond a then Just $ f a else Nothing
+yieldCmd a cond f
+    | cond a    = Just $ f a 
+    | otherwise = Nothing
 
 listen :: AcidState (EventState AddMessage) -> Net ()
 listen acidStack = forever $ do
@@ -42,10 +44,9 @@ listen acidStack = forever $ do
     void . liftIO . forkIO . void $ runRWST cmd env stack
 
 sendOne :: [String] -> Maybe (Net [String])
-sendOne msgs =
-    if not . null $ msg
-    then Just (send >> return rest)
-    else Nothing
+sendOne msgs
+    | msg /= [] = Just (send >> return rest)
+    | otherwise = Nothing
     where
         (msg, rest) = splitAt 1 msgs
         send        = write "PRIVMSG" (head $ msg)
@@ -60,9 +61,10 @@ forwardOutput' quick slow = do
     let trySlow   = sendOne slow  >>= return . fmap ((,) quick)
     let timeout _ = (return ([], []) `fromMaybe` trySlow) `fromMaybe` tryQuick
 
-    winner <- (liftIO $ race (threadDelay 50000) (readChan chan))
+    winner <- liftIO $ race (threadDelay 50000) (readChan chan)
     either ((uncurry forwardOutput' =<<) . timeout) store winner
 
     where
-        choice cond        = if cond then first else second
+        choice True        = first
+        choice False       = second
         update (cond, msg) = choice cond (msg :)

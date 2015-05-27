@@ -33,7 +33,13 @@ clean     = drop 1 . dropWhile (/= ':') . drop 1
 
 -- Set target of response
 target :: String -> String
-target x  = if parts !! 1 == "PRIVMSG" && t /= lambdabot && t /= clojurebot && ch /= chan then t else chan
+target x
+    | parts !! 1 == "PRIVMSG" 
+    && (not $ elem t [lambdabot, clojurebot])
+    && ch /= chan 
+        = t
+    | otherwise
+        = chan
     where
         parts  = words x
         ch     = parts !! 2
