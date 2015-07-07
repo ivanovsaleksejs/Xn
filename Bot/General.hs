@@ -2,7 +2,7 @@ module Bot.General
 
 where
 
-import Prelude hiding (putStrLn)
+import Prelude hiding (putStrLn, hPutStrLn)
 import System.IO.UTF8
 
 import Bot.Config

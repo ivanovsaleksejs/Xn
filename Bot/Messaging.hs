@@ -11,7 +11,9 @@ import Control.Concurrent.Async
 import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
-import System.IO
+import Prelude hiding (putStrLn)
+import System.IO hiding (hGetLine, putStrLn)
+import System.IO.UTF8
 
 import Bot.Config
 import Bot.General
