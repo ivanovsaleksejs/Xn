@@ -1,11 +1,6 @@
-module Bot.Commands.History
+module Bot.Commands.History where
 
-where
-
-import Control.Concurrent
 import Control.Monad.RWS
-
-import System.Random
 
 import Bot.Config
 import Bot.General
@@ -23,13 +18,7 @@ history s = do
 
 -- Send a history entry to user
 sendHistory :: String -> Msg -> Net ()
-sendHistory target (time, s) = sendDelayed $ privmsgPrio False target msg
+sendHistory target (time, s) = privmsgPrio False target msg
     where
         (origin, body) = (sender s, clean s)
         msg            = concat [time, " <", origin, "> ", body]
-
--- Sends multiple messages with random delay
-sendDelayed :: Net a -> Net ()
-sendDelayed = (>> (liftIO $ threadDelay =<< fmap interval randomIO))
-    where
-        interval = (*10^5) . (+) 5 . flip mod 10

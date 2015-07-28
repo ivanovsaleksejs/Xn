@@ -1,6 +1,4 @@
-module Bot.Commands.Str
-
-where
+module Bot.Commands.Str where
 
 import Control.Monad.RWS (get)
 

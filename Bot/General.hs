@@ -1,22 +1,17 @@
-module Bot.General
-
-where
+module Bot.General where
 
 import Prelude hiding (putStrLn, hPutStrLn)
 import System.IO.UTF8
 
 import Bot.Config
-import Control.Monad.IO.Class
 import Control.Monad.RWS
-import Control.Concurrent.Chan
-import Data.List
-import Text.Printf
+import Control.Concurrent.STM
 
 -- Send a privmsg to the channel/user + server
 privmsgPrio :: Bool -> String -> String -> Net ()
 privmsgPrio prio target s = do
-    chan <- asks out
-    liftIO $ writeChan chan (prio, target ++ " :" ++ s)
+    chan <- asks $ if prio then quick else slow
+    liftIO . atomically $ writeTChan chan (target ++ " :" ++ s)
 
 privmsg = privmsgPrio True
 

@@ -1,6 +1,4 @@
-module Bot.Restarter
-
-where
+module Bot.Restarter where
 
 import Control.Applicative
 
@@ -14,7 +12,6 @@ import System.IO
 import System.Posix.IO
 import System.Posix.Process
 import System.Posix.Signals
-import System.Time
 
 import Bot.Config
 

@@ -1,6 +1,4 @@
-module Bot.Commands
-
-where
+module Bot.Commands where
 
 import Data.List
 import Data.List.Utils
@@ -32,15 +30,15 @@ isChan s = length w > 2 && w !! 1 == "PRIVMSG" && w !! 2 == chan
     where w = words s
 
 showTitles :: String -> Net ()
-showTitles s = getTitles c >>= mapM_ (sendDelayed . privmsg t)
+showTitles s = getTitles c >>= mapM_ (privmsg t)
     where
         (t, c) = (target s, clean s)
         
 commands :: [(String -> Bool, String -> Net ())]
 commands =
     [
-            (substituteP. clean, substitute),
-            (historyP   . clean, history)
+        (substituteP. clean, substitute),
+        (historyP   . clean, history)
     ]
     ++ [
         (evlb, privmsg lambdabot  . clean), -- Eval to lambdabot

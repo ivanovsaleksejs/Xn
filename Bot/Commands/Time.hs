@@ -1,6 +1,4 @@
-module Bot.Commands.Time
-
-where
+module Bot.Commands.Time where
 
 import Data.List
 

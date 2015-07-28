@@ -1,6 +1,4 @@
-module Bot.Abbr.Words
-
-where
+module Bot.Abbr.Words where
 
 abbr :: [(String, String)]
 abbr =

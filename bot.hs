@@ -7,7 +7,6 @@ import Control.Exception
 
 import Prelude hiding (catch)
 
-import Data.Maybe
 import Data.Acid
 
 import Bot.Restarter

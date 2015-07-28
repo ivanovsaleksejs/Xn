@@ -1,7 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, TypeFamilies, StandaloneDeriving #-}
-module Bot.Config
-
-where
+module Bot.Config where
 
 import System.IO
 import System.Time
@@ -13,7 +11,8 @@ import Data.Acid
 import Data.Acid.Advanced
 
 import Control.Monad.RWS
-import Control.Concurrent.Chan
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TChan
 
 server     = "irc.freenode.org"
 port       = 6667
@@ -26,13 +25,11 @@ stateDir   = "chatBase/"
 
 type Msg          = (String, String)
 type MessageStack = [Msg]
+type State        = (ClockTime, MessageStack, ())
+type Net          = RWST Bot () MessageStack IO
 
-type State = (ClockTime, MessageStack, ())
-type Net   = RWST Bot () MessageStack IO
-
-type OutMsg = (Bool, String) -- (HasPriority, Message)
-data Bot    = Bot { socket :: Handle, starttime :: ClockTime, out :: Chan OutMsg }
 data Stack  = Stack State
+data Bot    = Bot { socket :: Handle, starttime :: ClockTime, quick :: TChan String, slow :: TChan String }
 
 instance SafeCopy Stack where
     putCopy (Stack list) = contain $ safePut list
@@ -53,7 +50,7 @@ addMessage :: Msg -> Update Stack ()
 addMessage msg = do
     Stack messages <- get
     let (f, s, t) = messages
-    put $ Stack (f, msg : s, t)
+    put $ Stack (f, msg : take 200 s, t)
 
 viewMessages :: Int -> Query Stack MessageStack
 viewMessages limit = do

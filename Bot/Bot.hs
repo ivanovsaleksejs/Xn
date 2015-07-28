@@ -1,13 +1,9 @@
-module Bot.Bot
+module Bot.Bot where
 
-where
-
-import Data.Acid
 import Text.Printf
 
 import Control.Concurrent
-import Control.Concurrent.Chan
-import Control.Concurrent.Async
+import Control.Concurrent.STM.TChan
 import Control.Monad.RWS hiding (listen)
 import Control.Exception
 
@@ -26,12 +22,13 @@ connect = connectTo server (PortNumber (fromIntegral port))
 
 makeBot :: ClockTime -> Handle -> IO Bot
 makeBot time h = notify $ do
-    c <- newChan
+    q <- newTChanIO
+    s <- newTChanIO
     t <- getClockTime
     hSetBuffering h NoBuffering
     hSetEncoding stdin utf8
     hSetEncoding stdout utf8
-    return $ Bot h time c
+    return $ Bot h time q s
         where
             notify a = bracket_
                 (printf "Connecting to %s ... " server >> hFlush stdout)
