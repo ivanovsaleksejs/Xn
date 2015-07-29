@@ -22,6 +22,13 @@ Commands
 
 <b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
 
+  <ul>
+    Some of lambdabot commands are simplified:
+    <li><b>:t <i>expr</i></b> - type of expression</li>
+    <li><b>:t <i>expr</i></b> - type of expression</li>
+    <li><b>:t <i>expr</i></b> - type of expression</li>
+  </ul>
+
 <b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
 
 <b>!ab &lt;abbr&gt;</b> - replaces abbreviations like "til" or "afaik" with respective phrases
