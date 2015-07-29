@@ -32,7 +32,10 @@ Some of lambdabot commands are simplified:
     <li><b>@pl <i>expr</i></b> - pointless notation of expression<br />
         > @pl \a -> a + 1<br />
         < (1 +)</li>
-    <li><b>@pointful <i>expr</i></b> - opposite to <b>@pl</b></li>
+    <li><b>@pointful <i>expr</i></b> - opposite to <b>@pl</b><br />
+        > @pointful (foo . bar .) . baz<br />
+        < (\ d j -> foo (bar (baz d j)))
+    </li>
     <li><b>@quote <i>nick</i></b> - quote from nick or random</li>
     <li><b>@undo <i>expr</i></b> - translate do notation to Monad operators<br />
         > @undo do {a <- foo; bar a}<br />
