@@ -22,11 +22,23 @@ Commands
 
 <b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
 
+Some of lambdabot commands are simplified:
+
   <ul>
-    Some of lambdabot commands are simplified:
+    <li><b>&gt; <i>expr</i></b> - execute the expression</li>
     <li><b>:t <i>expr</i></b> - type of expression</li>
-    <li><b>:t <i>expr</i></b> - type of expression</li>
-    <li><b>:t <i>expr</i></b> - type of expression</li>
+    <li><b>@free <i>ident</i></b> - free theorem generator</li>
+    <li><b>@hoogle <i>expr</i></b> - haskell API Search for either names, or types</li>
+    <li><b>@pl <i>expr</i></b> - pointless notation of expression<br />
+        > @pl \a -> a + 1<br />
+        < (1 +)</li>
+    <li><b>@pointful <i>expr</i></b> - opposite to <b>@pl</b></li>
+    <li><b>@quote <i>nick</i></b> - quote from nick or random</li>
+    <li><b>@undo <i>expr</i></b> - translate do notation to Monad operators<br />
+        > @undo do {a <- foo; bar a}<br />
+        < foo >>= \ a -> bar a
+    </li>
+    <li><b>@src <i>func</i></b> - implementation of function</li>
   </ul>
 
 <b>!cl &lt;cmd&gt;</b> - sends <i>cmd</i> to clojurebot and shows response
