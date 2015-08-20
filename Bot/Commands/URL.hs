@@ -1,24 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Bot.Commands.URL
+module Bot.Commands.URL where
 
-where
-
-import Data.List
-import Data.Monoid (mconcat)
-import Data.String.Utils (join)
-import Data.Text (unpack)
+import Data.List (tail, isPrefixOf)
+import Data.Char (toLower)
+import Data.ByteString.Lazy.Char8 (unpack)
 
 import Control.Exception as E
+import Control.Applicative ((<$>))
 import Control.Monad.RWS hiding (join)
 
-import Text.HTML.DOM (parseLBS)
-import Text.XML.Cursor (attributeIs, content, element,
-                         fromDocument, ($//), (&//), (>=>))
+import Network.HTTP.Types.Header (hRange, renderByteRange, ByteRange(ByteRangeFromTo))
+import Network.HTTP.Conduit (newManager, httpLbs, HttpException, requestHeaders,
+                                conduitManagerSettings, parseUrl, responseBody)
 
-import Network.HTTP.Conduit (simpleHttp, HttpException)
-
-import Bot.Config
-import Bot.General
+import Bot.Config (Net)
 
 -- Filter urls from string
 urls :: String -> [String]
@@ -33,9 +28,18 @@ getTitle :: String -> IO String
 getTitle url = E.catch (fetchTitle url) (\e -> const(return "") (e :: HttpException ))
 
 -- Fetch a title from web page
-fetchTitle :: MonadIO m => String -> m String
-fetchTitle url = do
-    lbs <- simpleHttp url
-    let doc = parseLBS lbs
-        cursor = fromDocument doc
-    return . take 150 . unpack . mconcat $ cursor $// element "title" &// content
+fetchTitle url = methodHead url >>= return . findTitle . take 2000 . unpack
+    where
+        methodHead s = do 
+            m <- newManager conduitManagerSettings
+            r <- parseUrl s
+            let r' = r {
+                requestHeaders = [(hRange, renderByteRange $ ByteRangeFromTo 20 2000)]
+            }
+            responseBody <$> httpLbs r' m
+        findTitle a
+            | a == []      = ""
+            | checkTitle a = title a 
+            | otherwise    = findTitle $ tail a
+        title      = takeWhile (/= '<') . take 150 . drop 1 . dropWhile (/= '>')
+        checkTitle = ("<title" ==) . map toLower . take 6 

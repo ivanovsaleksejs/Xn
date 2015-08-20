@@ -48,11 +48,12 @@ listen acidStack = do
         liftIO . forkIO . void $ runRWST cmd env stack
 
 forwardOutput :: Net ()
-forwardOutput = forever $ do
-    liftIO $ threadDelay =<< fmap interval randomIO
+forwardOutput = do
     q <- asks quick
     s <- asks slow
-    msg <- liftIO . atomically $ readTChan q `orElse` readTChan s
-    write "PRIVMSG" msg
-    where
-        interval = (*10^5) . (+) 5 . flip mod 10
+    forever $ do
+        liftIO $ threadDelay =<< fmap interval randomIO
+        msg <- liftIO . atomically $ readTChan q `orElse` readTChan s
+        write "PRIVMSG" msg
+        where
+            interval = (*10^5) . (+) 5 . flip mod 10
