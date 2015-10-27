@@ -1,5 +1,7 @@
 module Bot.Commands.Morse where
 
+import Data.Char
+
 code =[("a", ".-")
   ,("b", "-...")
   ,("c", "-.-.")
@@ -56,6 +58,6 @@ replace (f,s) c = str $ find code
             | f x == c = s x
             | otherwise  = find xs
 
-toMorse = unwords . map (replace (fst, snd) . (:[]))
+toMorse = unwords . map (replace (fst, snd) . (:[]) . toLower)
 
 fromMorse = (replace (snd, fst) =<<) . words
