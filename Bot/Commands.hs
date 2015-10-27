@@ -8,6 +8,7 @@ import Bot.Config
 import Bot.General
 
 import Bot.Commands.History
+import Bot.Commands.Morse
 import Bot.Commands.Str
 import Bot.Commands.Rand
 import Bot.Commands.Time
@@ -54,6 +55,8 @@ commands =
         cmd = [
                 ("!id",     ap pm d4),                  -- Show string
                 ("!ab",     ap pm ab),                  -- Replace abbrs
+                ("!fm",     ap pm fm),           -- Replace abbrs
+                ("!tm",     ap pm tm),             -- Replace abbrs
                 ("!uptime", (uptime >>=) . pm),         -- Show uptime
                 ("!ping",   flip pm "pong"),            -- Show "pong"
                 ("!lb",     privmsg lambdabot . d4),    -- Command to lambdabot
@@ -63,4 +66,5 @@ commands =
             ]
         [d2, d4, d6] = map ((. clean) . drop) [2,4,6]
         pm       = privmsg . target
+        [fm, tm] = map (. d4) [fromMorse, toMorse]
         ab s     = join " " $ map ($ s) [addSender . sender, replaceAbbr . d4]
