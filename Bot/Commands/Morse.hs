@@ -49,8 +49,9 @@ code =[("a", ".-")
   
 replace (f,s) c = str $ find code
     where
-        str [] = c
-        str xs = xs
+        str []  = c
+        str xs  = xs
+        find [] = []
         find (x:xs)
             | f x == c = s x
             | otherwise  = find xs
