@@ -9,8 +9,7 @@ import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
 import Prelude hiding (putStrLn)
-import System.IO hiding (hGetLine, putStrLn)
-import System.IO.UTF8
+import System.IO 
 import System.Random
 
 import Bot.Config

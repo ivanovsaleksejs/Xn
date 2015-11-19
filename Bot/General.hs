@@ -1,7 +1,7 @@
 module Bot.General where
 
 import Prelude hiding (putStrLn, hPutStrLn)
-import System.IO.UTF8
+import System.IO
 
 import Bot.Config
 import Control.Monad.RWS
