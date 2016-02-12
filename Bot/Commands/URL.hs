@@ -9,9 +9,8 @@ import Control.Exception as E
 import Control.Applicative ((<$>))
 import Control.Monad.RWS hiding (join)
 
-import Network.HTTP.Types.Header (hRange, renderByteRange, ByteRange(ByteRangeFromTo))
-import Network.HTTP.Conduit (newManager, httpLbs, HttpException, requestHeaders,
-                                conduitManagerSettings, parseUrl, responseBody)
+import System.Process
+import System.IO
 
 import Bot.Config (Net)
 
@@ -21,25 +20,20 @@ urls = filter (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . wo
 
 -- Fetch titles from all urls in string
 getTitles :: String -> Net [String]
-getTitles = liftIO . sequence . map getTitle . urls
+getTitles = liftIO . sequence . map fetchTitle . urls
 
 -- If title cannot be fetched, return empty string
 getTitle :: String -> IO String
-getTitle url = E.catch (fetchTitle url) (\e -> const(return "") (e :: HttpException ))
+getTitle url = fetchTitle url
 
 -- Fetch a title from web page
-fetchTitle url = methodHead url >>= return . findTitle . take 2000 . unpack
-    where
-        methodHead s = do 
-            m <- newManager conduitManagerSettings
-            r <- parseUrl s
-            let r' = r {
-                requestHeaders = [(hRange, renderByteRange $ ByteRangeFromTo 20 2000)]
-            }
-            responseBody <$> httpLbs r' m
-        findTitle a
-            | a == []      = ""
-            | checkTitle a = title a 
-            | otherwise    = findTitle $ tail a
-        title      = takeWhile (/= '<') . take 150 . drop 1 . dropWhile (/= '>')
-        checkTitle = ("<title" ==) . map toLower . take 6 
+fetchTitle url = do
+    (_, Just hOut, _, hProc) <- createProcess (
+                                      (shell (makewget url))
+                                                                        { std_out = CreatePipe }
+                                                                                                        )
+    exitCode <- waitForProcess hProc
+    output <- hGetContents hOut
+    return output 
+
+makewget url = "wget -qO- '" ++ url ++ "'  |   perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' |   recode html.."
