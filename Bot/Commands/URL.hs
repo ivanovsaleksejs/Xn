@@ -1,12 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Bot.Commands.URL where
 
-import Data.List (tail, isPrefixOf)
-import Data.Char (toLower)
-import Data.ByteString.Lazy.Char8 (unpack)
+import Data.List (isPrefixOf)
 
-import Control.Exception as E
-import Control.Applicative ((<$>))
 import Control.Monad.RWS hiding (join)
 
 import System.Process
@@ -28,10 +23,7 @@ getTitle url = fetchTitle url
 
 -- Fetch a title from web page
 fetchTitle url = do
-    (_, Just hOut, _, hProc) <- createProcess (
-                                      (shell (makewget url))
-                                                                        { std_out = CreatePipe }
-                                                                                                        )
+    (_, Just hOut, _, hProc) <- createProcess (shell $ makewget url) { std_out = CreatePipe }
     exitCode <- waitForProcess hProc
     output <- hGetContents hOut
     return output 
