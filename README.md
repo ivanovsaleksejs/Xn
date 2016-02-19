@@ -20,11 +20,11 @@ Commands
 
 <b>!rand &lt;num&gt;</b> - generates random Integer in range 0..<i>num</i>
 
-<b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
-
 <b>!fm &lt;code&gt;</b> - translates from Morse <i>code</i>
 
 <b>!tm &lt;str&gt;</b> - translates <i>str</i> to Morse code
+
+<b>!lb &lt;cmd&gt;</b> - sends <i>cmd</i> to lambdabot and shows response
 
 Some of lambdabot commands are simplified:
 
