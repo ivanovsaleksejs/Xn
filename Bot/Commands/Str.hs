@@ -49,12 +49,16 @@ subst sub orig
         (h, t)     = splitAt 1 orig
 
 -- Get sender's last message that is not s/ command
-lastmsg :: String -> MessageStack -> String
-lastmsg a stack
-    | length f == 0 = ""
+lastmsg :: String -> MessageStack -> String -> String
+lastmsg a stack p
+    | False && length f == 0 = ""
     | otherwise     = snd $ head f
     where
-        f  = filter (\s -> a == (sender $ snd s) && not (isPrefixOf "s/" $ clean $ snd s)) stack
+        f  = multiFilter [senderMsgs, notSubst, hasPattern] stack
+        senderMsgs = (a==) . sender . snd
+        notSubst   = not . isPrefixOf "s/" . clean . snd
+        hasPattern = isInfixOf from . clean . snd
+        (from, to) = split' p
 
 -- Send a substituted message
 substitute :: String -> Net ()
@@ -63,6 +67,6 @@ substitute s = do
     let
         tgt    = target s
         author = sender s
-        last   = clean $ lastmsg author stack
         pattn  = drop 2 $ clean s
+        last   = clean $ lastmsg author stack pattn
     privmsg tgt $ addSender author ++ " " ++ subst pattn last

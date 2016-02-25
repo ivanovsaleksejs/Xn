@@ -26,6 +26,9 @@ write s t = do
 -- Clear message of prefix
 clean     = drop 1 . dropWhile (/= ':') . drop 1
 
+-- Multiple filter
+multiFilter = filter . flip (all . flip id)
+
 -- Set target of response
 target :: String -> String
 target x
