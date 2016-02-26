@@ -20,6 +20,10 @@ Commands
 
 <b>!rand &lt;num&gt;</b> - generates random Integer in range 0..<i>num</i>
 
+<b>!tell &lt;nick&gt; &lt;msg&gt;</b> - saves <i>msg</i> and posts it to <i>nick</i> once he posts anything
+
+<b>!tell &lt;nick&gt;</b> - deletes saved <i>msg</i> to <i>nick</i> from author
+
 <b>!fm &lt;code&gt;</b> - translates from Morse <i>code</i>
 
 <b>!tm &lt;str&gt;</b> - translates <i>str</i> to Morse code
