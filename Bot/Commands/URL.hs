@@ -7,7 +7,9 @@ import Control.Monad.RWS hiding (join)
 import System.Process
 import System.IO
 
-import Bot.Config (Net)
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 
 -- Filter urls from string
 urls :: String -> [String]

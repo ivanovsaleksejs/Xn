@@ -1,6 +1,7 @@
 *.o
 *.hi
 *.log
+*.sw*
 bot
 dist/
 chatBase/

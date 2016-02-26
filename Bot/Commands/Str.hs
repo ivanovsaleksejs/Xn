@@ -6,7 +6,9 @@ import Data.List
 import Data.List.Split
 import Data.List.Utils
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 import Bot.Commands.History
 import Bot.Abbr.Words

@@ -3,7 +3,9 @@ module Bot.General where
 import Prelude hiding (putStrLn, hPutStrLn)
 import System.IO
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Control.Monad.RWS
 import Control.Concurrent.STM
 

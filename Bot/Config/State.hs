@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable, TypeFamilies, StandaloneDeriving #-}
-module Bot.Config where
+module Bot.Config.State where
 
-import System.IO
 import System.Time
 
 import Data.SafeCopy
@@ -11,55 +10,20 @@ import Data.Acid
 import Data.Acid.Advanced
 
 import Control.Monad.RWS
-import Control.Concurrent.STM
 import Control.Concurrent.STM.TChan
 
-server     = "irc.freenode.org"
-port       = 6667
-chan       = "#developerslv"
-nick       = "Xn"
-password   = "12345"
-lambdabot  = "lambdabot"
-clojurebot = "clojurebot"
-stateDir   = "chatBase/"
-
-type Msg          = (String, String)
-type MessageStack = [Msg]
-type State        = (ClockTime, MessageStack, ())
-type Net          = RWST Bot () MessageStack IO
-
-data Stack  = Stack State
-data Bot    = Bot { socket :: Handle, starttime :: ClockTime, quick :: TChan String, slow :: TChan String }
+import Bot.Config.Basic
+import Bot.Config.StateMethods
 
 instance SafeCopy Stack where
     putCopy (Stack list) = contain $ safePut list
     getCopy = contain $ fmap Stack safeGet
 
-resetUptime :: ClockTime -> Update Stack ()
-resetUptime time = do
-    Stack messages <- get
-    let (f, s, t) = messages
-    put $ Stack (time, s, t)
-
-getUptime :: Query Stack ClockTime
-getUptime = do
-    Stack messages <- ask
-    return $ fst3 messages
-
-addMessage :: Msg -> Update Stack ()
-addMessage msg = do
-    Stack messages <- get
-    let (f, s, t) = messages
-    put $ Stack (f, msg : take 200 s, t)
-
-viewMessages :: Int -> Query Stack MessageStack
-viewMessages limit = do
-    Stack state <- ask
-    return . take limit $ snd3 state
-
 data ViewMessages = ViewMessages Int
 data AddMessage   = AddMessage Msg
 data GetUptime    = GetUptime
+data FindTellItem = FindTellItem String
+data SaveTellItem = SaveTellItem TellItem
 
 deriving instance Typeable AddMessage
 instance SafeCopy AddMessage where
@@ -89,8 +53,28 @@ instance Method GetUptime where
     type MethodState GetUptime = Stack
 instance QueryEvent GetUptime
 
+deriving instance Typeable FindTellItem
+instance SafeCopy FindTellItem where
+    putCopy (FindTellItem st) = contain $ safePut st
+    getCopy = contain $ liftM FindTellItem safeGet
+instance Method FindTellItem where
+    type MethodResult FindTellItem = TellList
+    type MethodState FindTellItem = Stack
+instance UpdateEvent FindTellItem
+
+deriving instance Typeable SaveTellItem
+instance SafeCopy SaveTellItem where
+    putCopy (SaveTellItem st) = contain $ safePut st
+    getCopy = contain $ fmap SaveTellItem safeGet
+instance Method SaveTellItem where
+    type MethodResult SaveTellItem = ()
+    type MethodState SaveTellItem = Stack
+instance UpdateEvent SaveTellItem
+
 instance IsAcidic Stack where
     acidEvents = [ UpdateEvent (\(AddMessage newState) -> addMessage newState)
                  , QueryEvent (\(ViewMessages cnt)     -> viewMessages cnt)
                  , QueryEvent (\GetUptime              -> getUptime)
+                 , UpdateEvent (\(FindTellItem tgt)     -> findTellItem tgt)
+                 , UpdateEvent (\(SaveTellItem item)   -> saveTellItem item)
                  ]

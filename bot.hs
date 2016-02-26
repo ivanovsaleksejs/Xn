@@ -10,7 +10,9 @@ import Prelude hiding (catch)
 import Data.Acid
 
 import Bot.Restarter
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.Bot
 import Bot.Messaging
 
@@ -21,7 +23,7 @@ ignore _ = return ()
 main :: IO ()
 main = do
     now     <- getClockTime
-    stack   <- openLocalStateFrom stateDir (Stack (now, [("", "")], ()))
+    stack   <- openLocalStateFrom stateDir (Stack (now, [("", "")], []))
     uptime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 

@@ -7,7 +7,9 @@ import Control.Monad.RWS as R
 import System.Time
 import Data.Time
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 
 -- Calculate and pretty print the uptime

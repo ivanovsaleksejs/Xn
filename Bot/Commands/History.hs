@@ -2,7 +2,9 @@ module Bot.Commands.History where
 
 import Control.Monad.RWS
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 
 history :: String -> Net ()

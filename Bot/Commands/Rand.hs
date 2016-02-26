@@ -3,7 +3,9 @@ module Bot.Commands.Rand where
 import System.Random
 import Control.Monad.RWS
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 
 -- Generate a random Integer in range 0..n

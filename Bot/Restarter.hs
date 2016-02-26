@@ -13,7 +13,9 @@ import System.Posix.IO
 import System.Posix.Process
 import System.Posix.Signals
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 
 -- executeFile :: Command -> Maybe Search PATH -> Arguments -> Maybe ArgumentsEnvironment -> IO a
 restart :: Int -> IO ()

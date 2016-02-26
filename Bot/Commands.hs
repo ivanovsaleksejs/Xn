@@ -4,7 +4,9 @@ import Data.List
 import Data.List.Utils
 import Control.Monad hiding (join)
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 
 import Bot.Commands.History
@@ -21,9 +23,9 @@ evlb s    = (isPrefixOf "> " $ clean s) && sender s /= "daGrevis" -- Yes, this a
 lbCmd        = [":t", "@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo", "@src"]
 [tolb, tocl] = map (\x -> flip any x . flip isPrefixOf . clean) [lbCmd, [",("]]
 
-[ping, historyP, substituteP, lb, cl] =
+[ping, historyP, substituteP, lb, cl, tellP] =
     map isPrefixOf
-    ["PING :", "!history", "s/", ':' : lambdabot, ':' : clojurebot]
+    ["PING :", "!history", "s/", ':' : lambdabot, ':' : clojurebot, "!tell"]
 
 pong x   = write "PONG" (':' : drop 6 x)
 resp x   = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
@@ -55,14 +57,13 @@ commands =
         cmd = [
                 ("!id",     ap pm d4),                  -- Show string
                 ("!ab",     ap pm ab),                  -- Replace abbrs
-                ("!fm",     ap pm fm),           -- Replace abbrs
-                ("!tm",     ap pm tm),             -- Replace abbrs
+                ("!fm",     ap pm fm),                  -- Translate from Morse
+                ("!tm",     ap pm tm),                  -- Translate to Morse
                 ("!uptime", (uptime >>=) . pm),         -- Show uptime
                 ("!ping",   flip pm "pong"),            -- Show "pong"
                 ("!lb",     privmsg lambdabot . d4),    -- Command to lambdabot
                 ("!cl",     privmsg clojurebot . d4),   -- Command to clojurebot
-                ("!rand",   ap ((>>=) . rand . d6) pm), -- Show random number
-                ("",        const $ return ())
+                ("!rand",   ap ((>>=) . rand . d6) pm)  -- Show random number
             ]
         [d2, d4, d6] = map ((. clean) . drop) [2,4,6]
         pm       = privmsg . target

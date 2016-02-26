@@ -9,13 +9,16 @@ import Control.Monad.IfElse
 import Control.Monad.RWS hiding (join)
 
 import Prelude hiding (putStrLn)
-import System.IO 
+import System.IO
 import System.Random
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 import Bot.Commands
 import Bot.Commands.Time
+import Bot.Commands.Tell
 
 yieldCmd :: a -> (a -> Bool) -> (a -> b) -> (Maybe b)
 yieldCmd a cond f
@@ -42,7 +45,9 @@ listen acidStack = do
             liftIO $ update acidStack (AddMessage msg)
 
         -- Find a appropriate command to execute.
-        let cmd = fromJust . msum . map (uncurry $ yieldCmd line) $ commands
+        let
+            cmdList = (tellP . clean, tellAdd acidStack) : commands ++ [(const True, tellDump acidStack)]
+            cmd = fromJust . msum $ map (uncurry $ yieldCmd line) cmdList
 
         liftIO . forkIO . void $ runRWST cmd env stack
 

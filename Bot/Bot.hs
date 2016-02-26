@@ -12,7 +12,9 @@ import System.Time
 
 import Network
 
-import Bot.Config
+import Bot.Config.Basic
+import Bot.Config.State
+import Bot.Config.StateMethods
 import Bot.General
 import Bot.Messaging
 
