@@ -35,7 +35,6 @@ multiFilter = filter . flip (all . flip id)
 target :: String -> String
 target x
     | parts !! 1 == "PRIVMSG" 
-    && (not $ elem t [lambdabot, clojurebot])
     && ch /= chan 
         = t
     | otherwise

@@ -3,6 +3,7 @@ module Bot.Commands where
 import Data.List
 import Data.List.Utils
 import Control.Monad hiding (join)
+import Control.Monad.RWS (get)
 
 import Bot.Config.Basic
 import Bot.Config.State
@@ -28,7 +29,11 @@ lbCmd        = [":t", "@free", "@hoogle", "@pl", "@pointful", "@quote", "@undo",
     ["PING :", "!history", "s/", ':' : lambdabot, ':' : clojurebot, "!tell"]
 
 pong x   = write "PONG" (':' : drop 6 x)
-resp x   = write "PRIVMSG " (chan ++ ' ' : ':' : clean x)
+resp check x = do
+    stack <- get
+    let last = lastmsg check "" stack ""
+    write "PRIVMSG " (target last ++ ' ' : ':' : clean x)
+
 isChan s = length w > 2 && w !! 1 == "PRIVMSG" && w !! 2 == chan
     where w = words s
 
@@ -49,8 +54,8 @@ commands =
         (tocl, privmsg clojurebot . clean), -- Command to clojurebot
         (hasUrls, showTitles), -- Show titles of urls in message
         (ping, pong),          -- Ping
-        (lb,   resp),          -- Response from lambdabot
-        (cl,   resp)           -- Response from clojurebot
+        (lb,   resp (liftM2 (||) evlb tolb)), -- Response from lambdabot
+        (cl,   resp tocl)                     -- Response from clojurebot
     ]
     ++ [(isPrefixOf cmd . clean, f) | (cmd, f) <- cmd]
     where

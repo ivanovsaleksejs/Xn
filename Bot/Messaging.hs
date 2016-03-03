@@ -39,7 +39,7 @@ listen acidStack = do
 
         liftIO $ putStrLn line
         -- If message is on channel, save it in State monad and acid-state base
-        whenM (return $ isChan line) $ do
+        whenM (return $ isChan line || tolb line || evlb line) $ do
             let msg = (now, line)
             put    $ take 200 $ msg : stack
             liftIO $ update acidStack (AddMessage msg)
