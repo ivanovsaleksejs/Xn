@@ -30,4 +30,4 @@ fetchTitle url = do
     output <- hGetContents hOut
     return output 
 
-makewget url = "wget -qO- '" ++ url ++ "'  |   perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' |   recode html.."
+makewget url = "wget -qO- -T 30 '" ++ url ++ "'  |   perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' |   recode html.."

@@ -27,9 +27,8 @@ main = do
     uptime  <- query stack GetUptime
     history <- query stack (ViewMessages 200)
 
-    let run bot     = do
-        let env fn = runRWST fn bot history
-        env forwardOutput `concurrently` env (ident >> listen stack)
+    let run bot     = env forwardOutput `concurrently` env (ident >> listen stack)
+            where env fn = runRWST fn bot history
     bracket (open uptime) disconnect (flip catch ignore . void . run)
 
     where

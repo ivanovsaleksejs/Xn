@@ -5,3 +5,5 @@
 bot
 dist/
 chatBase/
+.cabal-sandbox
+cabal.sandbox.config
