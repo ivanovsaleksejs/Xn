@@ -1,0 +1,2 @@
+#!/bin/bash
+pkill -USR1 bot && git pull && ghc -O2 bot.hs && nohup ./bot > bot.log

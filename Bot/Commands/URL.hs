@@ -17,17 +17,14 @@ urls = filter (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . wo
 
 -- Fetch titles from all urls in string
 getTitles :: String -> Net [String]
-getTitles = liftIO . sequence . map fetchTitle . urls
+getTitles = liftIO . sequence . map getTitle . urls
 
 -- If title cannot be fetched, return empty string
 getTitle :: String -> IO String
-getTitle url = fetchTitle url
-
--- Fetch a title from web page
-fetchTitle url = do
+getTitle url = do
     (_, Just hOut, _, hProc) <- createProcess (shell $ makewget url) { std_out = CreatePipe }
     exitCode <- waitForProcess hProc
     output <- hGetContents hOut
     return output 
 
-makewget url = "wget -qO- -T 30 '" ++ url ++ "'  |   perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' |   recode html.."
+makewget url = "wget -qO- -T 30 '" ++ url ++ "' | tr -d '\n' | perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' | recode html.. | head -c 150"
