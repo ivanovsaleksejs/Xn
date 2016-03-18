@@ -1,2 +1,2 @@
 #!/bin/bash
-pkill -USR1 bot && git pull && ghc -O2 bot.hs && nohup ./bot > bot.log
+pkill -USR1 bot && nohup /var/bot/dist/dist-sandbox-*/build/bot/bot > bot.log

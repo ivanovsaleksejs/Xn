@@ -17,7 +17,7 @@ urls = filter (\x -> "http://" `isPrefixOf` x || "https://" `isPrefixOf` x) . wo
 
 -- Fetch titles from all urls in string
 getTitles :: String -> Net [String]
-getTitles = liftIO . sequence . map getTitle . urls
+getTitles = liftIO . sequence . map getTitle . map (filter (/= '\'')) . urls
 
 -- If title cannot be fetched, return empty string
 getTitle :: String -> IO String
@@ -27,4 +27,4 @@ getTitle url = do
     output <- hGetContents hOut
     return output 
 
-makewget url = "wget -qO- -T 30 '" ++ url ++ "' | tr -d '\n' | perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' | recode html.. | head -c 150"
+makewget url = "wget -qO- -T 30 '" ++ url ++ "' --user-agent='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:32.0) Gecko/20100101 Firefox/32.0' | tr -d '\n' | perl -l -0777 -ne 'print $1 if /<title.*?>\\s*(.*?)\\s*<\\/title/si' | recode html.. | head -c 150"
