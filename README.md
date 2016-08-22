@@ -1,4 +1,4 @@
-Xn_pls
+Xn
 ======
 A chat bot for #developerslv@freenode channel.
 
